@@ -47,7 +47,7 @@ variable "allow_extension_operations" {
 
 variable "availability_set_id" {
   type        = string
-  description = "(Optional) Specifies the ID of the Availability Set in which the Virtual Machine should exist. Changing this forces a new resource to be created."
+  description = "(Optional) Specifies the ID of the Availability Set in which the Virtual Machine should exist. Cannot be used along with `new_availability_set`, `new_capacity_reservation_group`, `capacity_reservation_group_id`, `zone`.. Changing this forces a new resource to be created."
   default     = null
 }
 
@@ -270,6 +270,7 @@ variable "new_availability_set" {
     proximity_placement_group_id = optional(string, null)
   })
   description = <<-EOT
+  Creates a new Availability Set for Virtual Machines. Cannot be used along with `availability_set_id`, `new_capacity_reservation_group`, `capacity_reservation_group_id`, `zone`.
   object({
     name                         = "(Required) Specifies the name of the availability set. Changing this forces a new resource to be created."
     managed                      = "(Optional) Specifies whether the availability set is managed or not. Possible values are `true` (to specify aligned) or `false` (to specify classic). Default is `true`. Changing this forces a new resource to be created."
@@ -620,27 +621,6 @@ variable "vm_winrm_listeners" {
   }))
   EOT
   default = toset([])
-}
-
-variable "vm_extension" {
-  type = object({
-    name                              = string
-    publisher                         = string
-    type                              = string
-    type_handler_version              = string
-    auto_upgrade_minor_version        = optional(bool)
-    automatic_upgrade_enabled         = optional(bool)
-    failure_suppression_enabled       = optional(bool, false)
-    settings                          = optional(string)
-    protected_settings                = optional(string)
-    protected_settings_from_key_vault = optional(object({
-      secret_url      = string
-      source_vault_id = string
-    }))
-  })
-  description = "Argument to create `azurerm_virtual_machine_extension` resource, the argument descriptions could be found at [the document](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension)."
-  default     = null
-  sensitive   = true # Because `protected_settings` is sensitive
 }
 
 variable "vm_os_disk" {
