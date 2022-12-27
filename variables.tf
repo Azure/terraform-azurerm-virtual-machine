@@ -4,6 +4,16 @@ variable "location" {
   nullable    = false
 }
 
+variable "image_os" {
+  description = "Enum flag of virtual machine's os system"
+  type        = string
+  nullable    = false
+  validation {
+    condition     = contains(["windows", "linux"], var.image_os)
+    error_message = "`image_os` must be either `windows` or `linux`."
+  }
+}
+
 variable "resource_group_name" {
   description = "(Required) The name of the Resource Group in which the Virtual Machine should be exist. Changing this forces a new resource to be created."
   type        = string
@@ -13,11 +23,19 @@ variable "resource_group_name" {
 variable "vnet_subnet_id" {
   description = "The subnet id of the virtual network where the virtual machines will reside."
   type        = string
+  nullable    = false
+}
+
+variable "vm_name" {
+  type        = string
+  description = "(Required) The name of the Virtual Machine. Changing this forces a new resource to be created."
+  nullable    = false
 }
 
 variable "vm_size" {
   description = "(Required) The SKU which should be used for this Virtual Machine, such as `Standard_F2`."
   type        = string
+  nullable    = false
 }
 
 variable "admin_password" {
@@ -47,7 +65,7 @@ variable "allow_extension_operations" {
 
 variable "availability_set_id" {
   type        = string
-  description = "(Optional) Specifies the ID of the Availability Set in which the Virtual Machine should exist. Cannot be used along with `new_availability_set`, `new_capacity_reservation_group`, `capacity_reservation_group_id`, `zone`.. Changing this forces a new resource to be created."
+  description = "(Optional) Specifies the ID of the Availability Set in which the Virtual Machine should exist. Cannot be used along with `new_availability_set`, `new_capacity_reservation_group`, `capacity_reservation_group_id`, `virtual_machine_scale_set_id`, `zone`. Changing this forces a new resource to be created."
   default     = null
 }
 
@@ -55,49 +73,43 @@ variable "boot_diagnostics" {
   type        = bool
   description = "(Optional) Enable or Disable boot diagnostics."
   default     = false
+  nullable    = false
 }
 
 variable "boot_diagnostics_sa_type" {
   description = "(Optional) Storage account type for boot diagnostics."
   type        = string
   default     = "Standard_LRS"
+  nullable    = false
 }
 
 variable "capacity_reservation_group_id" {
   type        = string
-  description = "(Optional) Specifies the ID of the Capacity Reservation Group which the Virtual Machine should be allocated to."
+  description = "(Optional) Specifies the ID of the Capacity Reservation Group which the Virtual Machine should be allocated to. Cannot be used with `new_capacity_reservation_group`, `availability_set_id`, `new_availability_set`, `proximity_placement_group_id`."
   default     = null
 }
 
-variable "compute_name_format" {
-  type    = string
-  default = "%s-%s-%d"
-  validation {
-    condition     = var.compute_name_format == null ? true : can(format(var.compute_name_format, "part1", "part2", 1))
-    error_message = "Invalid `compute_name_format`, the format must be either `null` or contain three parts: two strings and one digit"
-  }
+variable "compute_name" {
+  type        = string
+  description = "(Optional) Specifies the Hostname which should be used for this Virtual Machine. If unspecified this defaults to the value for the `vm_name` field. If the value of the `vm_name` field is not a valid `computer_name`, then you must specify `computer_name`. Changing this forces a new resource to be created."
+  default     = null
+}
+
+variable "create_public_ip" {
+  type        = bool
+  description = "Whether create a public IP and assign it to the vm or not."
+  default     = false
+  nullable    = false
 }
 
 variable "custom_data" {
-  description = "(Optional) The Base64-Encoded Custom Data which should be used for this Virtual Machine. Changing this forces a new resource to be created."
   type        = string
+  description = "(Optional) The Base64-Encoded Custom Data which should be used for this Virtual Machine. Changing this forces a new resource to be created."
   default     = null
   validation {
     condition     = var.custom_data == null ? true : can(base64decode(var.custom_data))
     error_message = "The `custom_data` must be either `null` or a valid Base64-Encoded string."
   }
-}
-
-variable "data_disk_size_gb" {
-  description = "Storage data disk size size."
-  type        = number
-  default     = 30
-}
-
-variable "data_sa_type" {
-  description = "Data Disk Storage Account type."
-  type        = string
-  default     = "Standard_LRS"
 }
 
 variable "dedicated_host_id" {
@@ -110,18 +122,6 @@ variable "dedicated_host_group_id" {
   type        = string
   description = "(Optional) The ID of a Dedicated Host Group that this Linux Virtual Machine should be run within. Conflicts with `dedicated_host_id`."
   default     = null
-}
-
-variable "delete_data_disks_on_termination" {
-  type        = bool
-  description = "Delete data disks when machine is terminated."
-  default     = false
-}
-
-variable "delete_os_disk_on_termination" {
-  type        = bool
-  description = "Delete datadisk when machine is terminated."
-  default     = false
 }
 
 variable "disable_password_authentication" {
@@ -160,62 +160,16 @@ variable "eviction_policy" {
   default     = null
 }
 
-# Why use object as type? We use this variable in `count` expression, if we use a newly created `azurerm_storage_account.primary_blob_endpoint` as uri directly, then Terraform would complain that it cannot determine the value of `count` during the plan phase, so we wrap the `uri` with an object.
-variable "external_boot_diagnostics_storage" {
-  description = "(Optional) The Storage Account's Blob Endpoint which should hold the virtual machine's diagnostic files. Set this argument would disable the creation of `azurerm_storage_account` resource."
-  type        = object({
-    uri = string
-  })
-  default = null
-  validation {
-    condition     = var.external_boot_diagnostics_storage == null ? true : var.external_boot_diagnostics_storage.uri != null
-    error_message = "`var.external_boot_diagnostics_storage.uri` cannot be `null`"
-  }
-}
-
-variable "extra_disks" {
-  description = "(Optional) List of extra data disks attached to each virtual machine."
-  type        = list(object({
-    name = string
-    size = number
-  }))
-  default = []
-}
-
 variable "extensions_time_budget" {
   type        = string
   description = "(Optional) Specifies the duration allocated for all extensions to start. The time duration should be between 15 minutes and 120 minutes (inclusive) and should be specified in ISO 8601 format. Defaults to 90 minutes (`PT1H30M`)."
   default     = "PT1H30M"
 }
 
-variable "extra_ssh_keys" {
-  description = "Same as ssh_key, but allows for setting multiple public keys. Set your first key in ssh_key, and the extras here."
-  type        = list(string)
-  default     = []
-}
-
-variable "identity_ids" {
-  description = "Specifies a list of user managed identity ids to be assigned to the VM."
-  type        = list(string)
-  default     = []
-}
-
-variable "identity_type" {
-  description = "The Managed Service Identity Type of this Virtual Machine."
-  type        = string
-  default     = ""
-}
-
 variable "is_marketplace_image" {
   description = "Boolean flag to notify when the image comes from the marketplace."
   type        = bool
   nullable    = false
-  default     = false
-}
-
-variable "is_windows_image" {
-  description = "Boolean flag to notify when the custom image is windows based."
-  type        = bool
   default     = false
 }
 
@@ -229,24 +183,6 @@ variable "max_bid_price" {
   type        = number
   description = "(Optional) The maximum price you're willing to pay for this Virtual Machine, in US Dollars; which must be greater than the current spot price. If this bid price falls below the current spot price the Virtual Machine will be evicted using the `eviction_policy`. Defaults to `-1`, which means that the Virtual Machine should not be evicted for price reasons. This can only be configured when `priority` is set to `Spot`."
   default     = -1
-}
-
-variable "nb_data_disk" {
-  description = "(Optional) Number of the data disks attached to each virtual machine."
-  type        = number
-  default     = 0
-}
-
-variable "nb_instances" {
-  description = "Specify the number of vm instances."
-  type        = number
-  default     = 1
-}
-
-variable "nb_public_ip" {
-  description = "Number of public IPs to assign corresponding to one IP per vm. Set to 0 to not assign any public IP addresses."
-  type        = number
-  default     = 1
 }
 
 variable "network_security_group" {
@@ -296,10 +232,20 @@ variable "new_capacity_reservation_group" {
   default     = null
 }
 
-variable "os_profile_secrets" {
-  description = "Specifies a list of certificates to be installed on the VM, each list item is a map with the keys source_vault_id, certificate_url and certificate_store."
-  type        = list(map(string))
-  default     = []
+variable "new_dedicated_host_group" {
+  type = object({
+    name                        = string
+    platform_fault_domain_count = number
+    automatic_placement_enabled = optional(bool, false)
+  })
+  description = <<-EOT
+  object({
+    name = "(Required) Specifies the name of the Dedicated Host Group. Changing this forces a new resource to be created."
+    platform_fault_domain_count = "(Required) The number of fault domains that the Dedicated Host Group spans. Changing this forces a new resource to be created."
+    automatic_placement_enabled = "(Optional) Would virtual machines or virtual machine scale sets be placed automatically on this Dedicated Host Group? Defaults to `false`. Changing this forces a new resource to be created."
+  })
+  EOT
+  default     = null
 }
 
 variable "patch_assessment_mode" {
@@ -316,8 +262,9 @@ variable "patch_mode" {
 
 variable "platform_fault_domain" {
   type        = number
-  description = "(Optional) Specifies the Platform Fault Domain in which this Linux Virtual Machine should be created. Defaults to `-1`, which means this will be automatically assigned to a fault domain that best maintains balance across the available fault domains. Changing this forces new Virtual Machine to be created."
-  default     = -1
+  description = "(Optional) Specifies the Platform Fault Domain in which this Virtual Machine should be created. Defaults to `null`, which means this will be automatically assigned to a fault domain that best maintains balance across the available fault domains. `virtual_machine_scale_set_id` is required with it. Changing this forces new Virtual Machine to be created."
+  # Why use `null` instead of [`-1`](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_virtual_machine#platform_fault_domain) as default value? `platform_fault_domain` must be set along with `virtual_machine_scale_set_id` so the default value must be `null` for this module if we don't want to use `virtual_machine_scale_set_id`.
+  default     = null
 }
 
 variable "priority" {
@@ -328,7 +275,7 @@ variable "priority" {
 
 variable "proximity_placement_group_id" {
   type        = string
-  description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to."
+  description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to. Conflicts with `capacity_reservation_group_id` and `capacity_reservation_group`."
   default     = null
 }
 
@@ -350,10 +297,10 @@ variable "public_ip_sku" {
   default     = "Basic"
 }
 
-variable "remote_port" {
+variable "nsg_public_open_port" {
   description = "Remote tcp port to be used for access to the vms created via the nsg applied to the nics."
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "secure_boot_enabled" {
@@ -362,19 +309,19 @@ variable "secure_boot_enabled" {
   default     = null
 }
 
-variable "source_address_prefixes" {
+variable "nsg_source_address_prefixes" {
   description = "(Optional) List of source address prefixes allowed to access var.remote_port."
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
 
-variable "source_image_id" {
+variable "vm_source_image_id" {
   type        = string
   description = "(Optional) The ID of the Image which this Virtual Machine should be created from. Changing this forces a new resource to be created. Possible Image ID types include `Image ID`s, `Shared Image ID`s, `Shared Image Version ID`s, `Community Gallery Image ID`s, `Community Gallery Image Version ID`s, `Shared Gallery Image ID`s and `Shared Gallery Image Version ID`s. One of either `source_image_id` or `source_image_reference` must be set."
   default     = null
 }
 
-variable "source_image_reference" {
+variable "vm_source_image_reference" {
   type = object({
     publisher = string
     offer     = string
@@ -402,6 +349,64 @@ variable "ssh_key_values" {
   description = "List of Public SSH Keys values to be used for ssh access to the VMs."
   type        = list(string)
   default     = []
+}
+
+variable "standard_os" {
+  type = map(object({
+    publisher = string
+    offer     = string
+    sku       = string
+  }))
+  description = <<-EOT
+  map(object({
+    publisher = "(Required) Specifies the publisher of the image used to create the virtual machines. Changing this forces a new resource to be created."
+    offer     = "(Required) Specifies the offer of the image used to create the virtual machines. Changing this forces a new resource to be created."
+    sku       = "(Required) Specifies the SKU of the image used to create the virtual machines. Changing this forces a new resource to be created."
+  }))
+  EOT
+  default     = {
+    UbuntuServer = {
+      publisher = "Canonical"
+      offer     = "UbuntuServer"
+      sku       = "18.04-LTS"
+    }
+    WindowsServer = {
+      publisher = "MicrosoftWindowsServer"
+      offer     = "WindowsServer"
+      sku       = "2019-Datacenter"
+    }
+    RHEL = {
+      publisher = "RedHat"
+      offer     = "RHEL"
+      sku       = "8.2"
+    }
+    openSUSE-Leap = {
+      publisher = "SUSE"
+      offer     = "openSUSE-Leap"
+      sku       = "15.1"
+    }
+    CentOS = {
+      publisher = "OpenLogic"
+      offer     = "CentOS"
+      sku       = "7.6"
+    }
+    Debian = {
+      publisher = "credativ"
+      offer     = "Debian"
+      sku       = "9"
+    }
+    CoreOS = {
+      publisher = "CoreOS"
+      offer     = "CoreOS"
+      sku       = "Stable"
+    }
+    SLES = {
+      publisher = "SUSE"
+      offer     = "SLES"
+      sku       = "12-SP2"
+    }
+  }
+  nullable = false
 }
 
 variable "storage_account_type" {
@@ -437,7 +442,7 @@ variable "user_data" {
 
 variable "virtual_machine_scale_set_id" {
   type        = string
-  description = "(Optional) Specifies the Orchestrated Virtual Machine Scale Set that this Virtual Machine should be created within. Changing this forces a new resource to be created."
+  description = "(Optional) Specifies the Orchestrated Virtual Machine Scale Set that this Virtual Machine should be created within. Conflicts with `availability_set_id` and `new_availability_set`. Changing this forces a new resource to be created."
   default     = null
 }
 
@@ -453,7 +458,7 @@ variable "vm_additional_capabilities" {
   default     = null
 }
 
-variable "vm_additional_unattend_content" {
+variable "vm_additional_unattend_contents" {
   type = list(object({
     content = string
     setting = string
@@ -464,7 +469,7 @@ variable "vm_additional_unattend_content" {
     setting = "(Required) The name of the setting to which the content applies. Possible values are `AutoLogon` and `FirstLogonCommands`. Changing this forces a new resource to be created."
   }))
   EOT
-  default     = tolist([])
+  default     = []
 }
 
 variable "vm_automatic_updates_enabled" {
@@ -496,7 +501,7 @@ variable "vm_admin_ssh_key" {
     username   = "(Required) The Username for which this Public SSH Key should be configured. Changing this forces a new resource to be created. The Azure VM Agent only allows creating SSH Keys at the path `/home/{username}/.ssh/authorized_keys` - as such this public key will be written to the authorized keys file."
   }))
   EOT
-  default     = toset([])
+  default     = []
 }
 
 variable "vm_gallery_application" {
@@ -514,13 +519,7 @@ variable "vm_gallery_application" {
     tag                    = "(Optional) Specifies a passthrough value for more generic context. This field can be any valid `string` value."
   }))
   EOT
-  default     = tolist([])
-}
-
-variable "vm_hostname" {
-  description = "local name of the Virtual Machine."
-  type        = string
-  default     = "myvm"
+  default     = []
 }
 
 variable "vm_hotpatching_enabled" {
@@ -541,15 +540,6 @@ variable "vm_identity" {
   })
   EOT
   default     = null
-}
-
-variable "vm_name_format" {
-  type    = string
-  default = null
-  validation {
-    condition     = var.vm_name_format == null ? true : can(format(var.vm_name_format, "part1", 1))
-    error_message = "Invalid `vm_name_format`, the format must be either `null` or contain two parts: `var.vm_host` and `count.index`"
-  }
 }
 
 variable "vm_plan" {
@@ -585,7 +575,8 @@ variable "vm_secrets" {
     }))
   }))
   EOT
-  default     = null
+  default     = []
+  nullable    = false
 }
 
 variable "vm_termination_notification" {
@@ -620,7 +611,8 @@ variable "vm_winrm_listeners" {
     certificate_url = "(Optional) The Secret URL of a Key Vault Certificate, which must be specified when `protocol` is set to `Https`. Changing this forces a new resource to be created."
   }))
   EOT
-  default = toset([])
+  default     = []
+  nullable    = false
 }
 
 variable "vm_os_disk" {
@@ -636,7 +628,7 @@ variable "vm_os_disk" {
     diff_disk_settings               = optional(object({
       option    = string
       placement = optional(string, "CacheDisk")
-    }), [])
+    }), null)
   })
   description = <<-EOT
   object({
@@ -657,40 +649,17 @@ variable "vm_os_disk" {
   nullable    = false
 }
 
-variable "vm_os_id" {
-  description = "The resource ID of the image that you want to deploy if you are using a custom image.Note, need to provide is_windows_image = true for windows custom images."
-  type        = string
-  default     = ""
-}
-
-variable "vm_os_offer" {
-  description = "The name of the offer of the image that you want to deploy. This is ignored when vm_os_id or vm_os_simple are provided."
-  type        = string
-  default     = ""
-}
-
-variable "vm_os_publisher" {
-  description = "The name of the publisher of the image that you want to deploy. This is ignored when vm_os_id or vm_os_simple are provided."
-  type        = string
-  default     = ""
-}
-
 variable "vm_os_simple" {
   description = "Specify UbuntuServer, WindowsServer, RHEL, openSUSE-Leap, CentOS, Debian, CoreOS and SLES to get the latest image version of the specified os.  Do not provide this value if a custom value is used for vm_os_publisher, vm_os_offer, and vm_os_sku."
   type        = string
-  default     = ""
-}
-
-variable "vm_os_sku" {
-  description = "The sku of the image that you want to deploy. This is ignored when vm_os_id or vm_os_simple are provided."
-  type        = string
-  default     = ""
+  default     = null
 }
 
 variable "vm_os_version" {
   description = "The version of the image that you want to deploy. This is ignored when vm_os_id or vm_os_simple are provided."
   type        = string
   default     = "latest"
+  nullable    = false
 }
 
 variable "vtpm_enabled" {
