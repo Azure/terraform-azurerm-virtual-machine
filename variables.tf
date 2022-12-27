@@ -47,7 +47,7 @@ variable "allow_extension_operations" {
 
 variable "availability_set_id" {
   type        = string
-  description = "(Optional) Specifies the ID of the Availability Set in which the Virtual Machine should exist. Cannot be used along with `new_availability_set`, `new_capacity_reservation_group`, `capacity_reservation_group_id`, `zone`.. Changing this forces a new resource to be created."
+  description = "(Optional) Specifies the ID of the Availability Set in which the Virtual Machine should exist. Cannot be used along with `new_availability_set`, `new_capacity_reservation_group`, `capacity_reservation_group_id`, `virtual_machine_scale_set_id`, `zone`.. Changing this forces a new resource to be created."
   default     = null
 }
 
@@ -65,16 +65,16 @@ variable "boot_diagnostics_sa_type" {
 
 variable "capacity_reservation_group_id" {
   type        = string
-  description = "(Optional) Specifies the ID of the Capacity Reservation Group which the Virtual Machine should be allocated to."
+  description = "(Optional) Specifies the ID of the Capacity Reservation Group which the Virtual Machine should be allocated to. Cannot be used with `new_capacity_reservation_group`, `availability_set_id`, `new_availability_set`, `proximity_placement_group_id`."
   default     = null
 }
 
-variable "compute_name_format" {
+variable "computer_name_format" {
   type    = string
   default = "%s-%s-%d"
   validation {
-    condition     = var.compute_name_format == null ? true : can(format(var.compute_name_format, "part1", "part2", 1))
-    error_message = "Invalid `compute_name_format`, the format must be either `null` or contain three parts: two strings and one digit"
+    condition     = var.computer_name_format == null ? true : can(format(var.computer_name_format, "part1", "part2", 1))
+    error_message = "Invalid `computer_name_format`, the format must be either `null` or contain three parts: two strings and one digit"
   }
 }
 
@@ -316,7 +316,7 @@ variable "patch_mode" {
 
 variable "platform_fault_domain" {
   type        = number
-  description = "(Optional) Specifies the Platform Fault Domain in which this Linux Virtual Machine should be created. Defaults to `-1`, which means this will be automatically assigned to a fault domain that best maintains balance across the available fault domains. Changing this forces new Virtual Machine to be created."
+  description = "(Optional) Specifies the Platform Fault Domain in which this Linux Virtual Machine should be created. Defaults to `-1`, which means this will be automatically assigned to a fault domain that best maintains balance across the available fault domains. `virtual_machine_scale_set_id` is required with it. Changing this forces new Virtual Machine to be created."
   default     = -1
 }
 
@@ -328,7 +328,7 @@ variable "priority" {
 
 variable "proximity_placement_group_id" {
   type        = string
-  description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to."
+  description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to. Conflicts with `capacity_reservation_group_id`."
   default     = null
 }
 
@@ -437,7 +437,7 @@ variable "user_data" {
 
 variable "virtual_machine_scale_set_id" {
   type        = string
-  description = "(Optional) Specifies the Orchestrated Virtual Machine Scale Set that this Virtual Machine should be created within. Changing this forces a new resource to be created."
+  description = "(Optional) Specifies the Orchestrated Virtual Machine Scale Set that this Virtual Machine should be created within. Conflicts with `availability_set_id`. Changing this forces a new resource to be created."
   default     = null
 }
 

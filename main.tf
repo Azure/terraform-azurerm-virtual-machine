@@ -42,7 +42,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   allow_extension_operations      = var.allow_extension_operations
   availability_set_id             = local.availability_set_id
   capacity_reservation_group_id   = local.capacity_reservation_group_id
-  computer_name                   = var.compute_name_format == null ? null : format(var.compute_name_format, var.vm_hostname, "vmLinux", count.index)
+  computer_name                   = var.computer_name_format == null ? null : format(var.computer_name_format, var.vm_hostname, "vmLinux", count.index)
   custom_data                     = var.custom_data
   dedicated_host_id               = var.dedicated_host_id
   dedicated_host_group_id         = var.dedicated_host_group_id
@@ -192,7 +192,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   allow_extension_operations      = var.allow_extension_operations
   availability_set_id             = local.availability_set_id
   capacity_reservation_group_id   = local.capacity_reservation_group_id
-  computer_name                   = var.compute_name_format == null ? null : format(var.compute_name_format, var.vm_hostname, "vmWindows", count.index)
+  computer_name                   = var.computer_name_format == null ? null : format(var.computer_name_format, var.vm_hostname, "vmWindows", count.index)
   custom_data                     = var.custom_data
   dedicated_host_id               = var.dedicated_host_id
   dedicated_host_group_id         = var.dedicated_host_group_id
