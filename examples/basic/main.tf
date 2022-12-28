@@ -33,22 +33,34 @@ resource "tls_private_key" "ssh" {
   rsa_bits  = "4096"
 }
 
+locals {
+  linux_vm_name = "ubuntu-${random_pet.pet.id}"
+  windows_vm_name = "windows-${random_pet.pet.id}"
+}
+
 module "linux" {
   source = "../.."
 
   location                    = var.location
   image_os                    = "linux"
   resource_group_name         = azurerm_resource_group.rg.name
-  create_public_ip            = var.create_public_ip
+  new_public_ips = var.create_public_ip ? [{
+    name = "linux-pip"
+  }] : []
+  new_network_interface = {
+    ip_configurations = [{
+      public_ip_address_name = var.create_public_ip ? "linux-pip" : null
+    }]
+  }
   nsg_public_open_port        = var.create_public_ip ? "22" : null
   nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [jsondecode(data.curl.public_ip[0].response).ip] : [var.nsg_rule_source_address_prefix]) : null
-  vm_admin_ssh_key            = [
+  vm_admin_ssh_key = [
     {
       public_key = tls_private_key.ssh.public_key_openssh
       username   = "azureuser"
     }
   ]
-  vm_name    = "ubuntu-${random_pet.pet.id}"
+  vm_name = local.linux_vm_name
   vm_os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
@@ -71,15 +83,22 @@ resource "random_password" "win_password" {
 module "windows" {
   source = "../.."
 
-  location            = var.location
-  image_os            = "windows"
-  resource_group_name = azurerm_resource_group.rg.name
-  create_public_ip            = var.create_public_ip
+  location                    = var.location
+  image_os                    = "windows"
+  resource_group_name         = azurerm_resource_group.rg.name
+  new_public_ips = var.create_public_ip ? [{
+    name = "windows-pip"
+  }] : []
+  new_network_interface = {
+    ip_configurations = [{
+      public_ip_address_name = var.create_public_ip ? "windows-pip" : null
+    }]
+  }
   nsg_public_open_port        = var.create_public_ip ? "3389" : null
   nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [jsondecode(data.curl.public_ip[0].response).ip] : [var.nsg_rule_source_address_prefix]) : null
-  admin_password      = random_password.win_password.result
-  vm_name             = "windows-${random_pet.pet.id}"
-  vm_os_disk          = {
+  admin_password              = random_password.win_password.result
+  vm_name                     = "windows-${random_pet.pet.id}"
+  vm_os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }

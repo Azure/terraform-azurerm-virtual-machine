@@ -13,12 +13,12 @@ func TestExamplesBasic(t *testing.T) {
 	createPublicIp := []bool{
 		false, true,
 	}
-	for _, create := range createPublicIp {
+	for _, publicIp := range createPublicIp {
 		t.Run(fmt.Sprintf("createPublicIp-%v", createPublicIp), func(t *testing.T) {
 			test_helper.RunE2ETest(t, "../../", "examples/basic", terraform.Options{
 				Upgrade: true,
 				Vars: map[string]interface{}{
-					"create_public_ip": create,
+					"create_public_ip": publicIp,
 				},
 			}, func(t *testing.T, output test_helper.TerraformOutput) {
 				vmIdRegex := `/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Compute/virtualMachines/.+`
@@ -28,14 +28,18 @@ func TestExamplesBasic(t *testing.T) {
 				windowsVmId, ok := output["windows_vm_id"]
 				assert.True(t, ok)
 				assert.Regexp(t, vmIdRegex, windowsVmId)
-				if create {
-					linuxPublicIp, ok := output["linux_public_ip"].(string)
+				if publicIp {
+					linuxPublicIps, ok := output["linux_public_ips"].([]string)
 					assert.True(t, ok)
-					windowsPublicIp, ok := output["windows_public_ip"].(string)
+					assert.Equal(t, 1, len(linuxPublicIps))
+					windowsPublicIps, ok := output["windows_public_ips"].([]string)
 					assert.True(t, ok)
+					assert.Equal(t, 1, len(windowsPublicIps))
 					ipRegex := `((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}`
-					assert.Regexp(t, ipRegex, linuxPublicIp)
-					assert.Regexp(t, ipRegex, windowsPublicIp)
+					ips := append(linuxPublicIps, windowsPublicIps...)
+					for _, ip := range ips {
+						assert.Regexp(t, ipRegex, ip)
+					}
 					nsgIdRegex := `/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/networkSecurityGroups/.+`
 					linuxNsgId, ok := output["linux_network_security_group_id"].(string)
 					assert.True(t, ok)

@@ -1,12 +1,12 @@
 variable "location" {
-  type    = string
-  default = "eastus"
+  type     = string
+  default  = "eastus"
   nullable = false
 }
 
 variable "size" {
-  type    = string
-  default = "Standard_F2"
+  type     = string
+  default  = "Standard_F2"
   nullable = false
 }
 

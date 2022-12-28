@@ -32,29 +32,29 @@ output "network_security_group_name" {
   value       = try(azurerm_network_security_group.vm[0].name, null)
 }
 
-output "public_ip_address" {
+output "public_ip_addresses" {
   description = "The actual ip address allocated for the resource."
-  value       = try(data.azurerm_public_ip.vm[0].ip_address, null)
+  value       = try([for ip in data.azurerm_public_ip.vm : ip.ip_address], [])
 }
 
-output "public_ip_dns_name" {
+output "public_ip_dns_names" {
   description = "fqdn to connect to the first vm provisioned."
-  value       = try(azurerm_public_ip.vm[0].fqdn, null)
+  value       = try([for ip in data.azurerm_public_ip.vm : ip.fqdn], [])
 }
 
-output "public_ip_id" {
+output "public_ip_ids" {
   description = "id of the public ip address provisoned."
-  value       = try(azurerm_public_ip.vm[0].id, null)
-}
-
-output "vm_identity" {
-  description = "map with key `Virtual Machine Id`, value `list of identity` created for the Virtual Machine."
-  value       = local.virtual_machine.identity
+  value       = try([for ip in data.azurerm_public_ip.vm : ip.id], [])
 }
 
 output "vm_id" {
   description = "Virtual machine ids created."
   value       = local.virtual_machine.id
+}
+
+output "vm_identity" {
+  description = "map with key `Virtual Machine Id`, value `list of identity` created for the Virtual Machine."
+  value       = local.virtual_machine.identity
 }
 
 output "vm_name" {

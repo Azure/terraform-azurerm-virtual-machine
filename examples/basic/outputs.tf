@@ -11,12 +11,12 @@ output "windows_vm_password" {
   sensitive = true
 }
 
-output "linux_public_ip" {
-  value = module.linux.public_ip_address
+output "linux_public_ips" {
+  value = module.linux.public_ip_addresses
 }
 
-output "windows_public_ip" {
-  value = module.windows.public_ip_address
+output "windows_public_ips" {
+  value = module.windows.public_ip_addresses
 }
 
 output "linux_network_security_group_id" {

@@ -22,7 +22,6 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 
   admin_username        = var.admin_username
   location              = var.location
-  license_type          = var.license_type
   name                  = var.vm_name
   network_interface_ids = [
     azurerm_network_interface.vm.id
@@ -35,13 +34,15 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   capacity_reservation_group_id   = local.capacity_reservation_group_id
   computer_name                   = coalesce(var.compute_name, var.vm_name)
   custom_data                     = var.custom_data
-  dedicated_host_id               = var.dedicated_host_id
   dedicated_host_group_id         = local.dedicated_host_group_id
+  dedicated_host_id               = var.dedicated_host_id
   disable_password_authentication = var.disable_password_authentication
   edge_zone                       = var.edge_zone
   encryption_at_host_enabled      = var.encryption_at_host_enabled
   eviction_policy                 = var.eviction_policy
   extensions_time_budget          = var.extensions_time_budget
+  license_type                    = var.license_type
+  max_bid_price                   = var.max_bid_price
   patch_assessment_mode           = var.patch_assessment_mode
   patch_mode                      = local.patch_mode
   platform_fault_domain           = var.platform_fault_domain
@@ -50,12 +51,11 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   proximity_placement_group_id    = var.proximity_placement_group_id
   secure_boot_enabled             = var.secure_boot_enabled
   source_image_id                 = var.vm_source_image_id
-  user_data                       = var.user_data
-  max_bid_price                   = var.max_bid_price
-  vtpm_enabled                    = var.vtpm_enabled
-  virtual_machine_scale_set_id    = var.virtual_machine_scale_set_id
   tags                            = var.tags
-  zone                            = var.zone
+  user_data                       = var.vm_user_data
+  virtual_machine_scale_set_id    = var.virtual_machine_scale_set_id
+  vtpm_enabled                    = var.vm_vtpm_enabled
+  zone                            = var.vm_zone
 
   os_disk {
     caching                          = var.vm_os_disk.caching
@@ -66,6 +66,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     secure_vm_disk_encryption_set_id = var.vm_os_disk.secure_vm_disk_encryption_set_id
     security_encryption_type         = var.vm_os_disk.security_encryption_type
     write_accelerator_enabled        = var.vm_os_disk.write_accelerator_enabled
+
     dynamic "diff_disk_settings" {
       for_each = var.vm_os_disk.diff_disk_settings == null ? [] : [
         "diff_disk_settings"
@@ -77,7 +78,6 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
       }
     }
   }
-
   dynamic "additional_capabilities" {
     for_each = var.vm_additional_capabilities == null ? [] : [
       "additional_capabilities"
@@ -134,6 +134,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 
     content {
       key_vault_id = secret.value.key_vault_id
+
       dynamic "certificate" {
         for_each = secret.value.certificate
 
@@ -149,8 +150,8 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     ]
 
     content {
-      publisher = var.vm_source_image_reference.publisher
       offer     = var.vm_source_image_reference.offer
+      publisher = var.vm_source_image_reference.publisher
       sku       = var.vm_source_image_reference.sku
       version   = var.vm_source_image_reference.version
     }
@@ -161,8 +162,8 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     ] : []
 
     content {
-      publisher = var.standard_os[var.vm_os_simple].publisher
       offer     = var.standard_os[var.vm_os_simple].offer
+      publisher = var.standard_os[var.vm_os_simple].publisher
       sku       = var.standard_os[var.vm_os_simple].sku
       version   = var.vm_os_version
     }
@@ -197,7 +198,6 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   admin_password        = var.admin_password
   admin_username        = var.admin_username
   location              = var.location
-  license_type          = var.license_type
   name                  = var.vm_name
   network_interface_ids = [
     azurerm_network_interface.vm.id
@@ -209,14 +209,16 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   capacity_reservation_group_id = local.capacity_reservation_group_id
   computer_name                 = coalesce(var.compute_name, var.vm_name)
   custom_data                   = var.custom_data
-  dedicated_host_id             = var.dedicated_host_id
   dedicated_host_group_id       = local.dedicated_host_group_id
+  dedicated_host_id             = var.dedicated_host_id
   edge_zone                     = var.edge_zone
   enable_automatic_updates      = var.vm_automatic_updates_enabled
   encryption_at_host_enabled    = var.encryption_at_host_enabled
   eviction_policy               = var.eviction_policy
   extensions_time_budget        = var.extensions_time_budget
   hotpatching_enabled           = var.vm_hotpatching_enabled
+  license_type                  = var.license_type
+  max_bid_price                 = var.max_bid_price
   patch_assessment_mode         = var.patch_assessment_mode
   patch_mode                    = local.patch_mode
   platform_fault_domain         = var.platform_fault_domain
@@ -225,13 +227,12 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   proximity_placement_group_id  = var.proximity_placement_group_id
   secure_boot_enabled           = var.secure_boot_enabled
   source_image_id               = var.vm_source_image_id
-  user_data                     = var.user_data
-  max_bid_price                 = var.max_bid_price
-  vtpm_enabled                  = var.vtpm_enabled
-  virtual_machine_scale_set_id  = var.virtual_machine_scale_set_id
   tags                          = var.tags
   timezone                      = var.vm_timezone
-  zone                          = var.zone
+  user_data                     = var.vm_user_data
+  virtual_machine_scale_set_id  = var.virtual_machine_scale_set_id
+  vtpm_enabled                  = var.vm_vtpm_enabled
+  zone                          = var.vm_zone
 
   os_disk {
     caching                          = var.vm_os_disk.caching
@@ -242,6 +243,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
     secure_vm_disk_encryption_set_id = var.vm_os_disk.secure_vm_disk_encryption_set_id
     security_encryption_type         = var.vm_os_disk.security_encryption_type
     write_accelerator_enabled        = var.vm_os_disk.write_accelerator_enabled
+
     dynamic "diff_disk_settings" {
       for_each = var.vm_os_disk.diff_disk_settings == null ? [] : [
         "diff_disk_settings"
@@ -253,7 +255,6 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
       }
     }
   }
-
   dynamic "additional_capabilities" {
     for_each = var.vm_additional_capabilities == null ? [] : [
       "additional_capabilities"
@@ -265,7 +266,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   }
   dynamic "additional_unattend_content" {
     for_each = {
-      for c in var.vm_additional_unattend_contents : jsonencode(c) =>c
+      for c in var.vm_additional_unattend_contents : jsonencode(c) => c
     }
 
     content {
@@ -312,12 +313,13 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
 
     content {
       key_vault_id = secret.value.key_vault_id
+
       dynamic "certificate" {
         for_each = secret.value.certificate
 
         content {
-          url   = certificate.value.url
           store = certificate.value.store
+          url   = certificate.value.url
         }
       }
     }
@@ -328,8 +330,8 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
     ]
 
     content {
-      publisher = var.vm_source_image_reference.publisher
       offer     = var.vm_source_image_reference.offer
+      publisher = var.vm_source_image_reference.publisher
       sku       = var.vm_source_image_reference.sku
       version   = var.vm_source_image_reference.version
     }
@@ -340,8 +342,8 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
     ] : []
 
     content {
-      publisher = var.standard_os[var.vm_os_simple].publisher
       offer     = var.standard_os[var.vm_os_simple].offer
+      publisher = var.standard_os[var.vm_os_simple].publisher
       sku       = var.standard_os[var.vm_os_simple].sku
       version   = var.vm_os_version
     }
@@ -445,19 +447,33 @@ resource "azurerm_dedicated_host_group" "vm" {
   platform_fault_domain_count = var.new_dedicated_host_group.platform_fault_domain_count
   resource_group_name         = var.resource_group_name
   automatic_placement_enabled = var.new_dedicated_host_group.automatic_placement_enabled
+  tags                        = var.tags
 }
 
 resource "azurerm_public_ip" "vm" {
-  count = var.create_public_ip ? 1 : 0
+  for_each = {for ip in var.new_public_ips : ip.name => ip}
 
-  allocation_method   = var.allocation_method
-  location            = var.location
-  name                = "${var.vm_name}-pip"
-  resource_group_name = var.resource_group_name
-  domain_name_label   = element(var.public_ip_dns, count.index)
-  sku                 = var.public_ip_sku
-  tags                = var.tags
-  zones               = var.zone == null ? null : [var.zone]
+  allocation_method       = each.value.allocation_method
+  location                = var.location
+  name                    = each.value.name
+  resource_group_name     = var.resource_group_name
+  domain_name_label       = each.value.domain_name_label
+  ddos_protection_mode    = each.value.ddos_protection_mode
+  ddos_protection_plan_id = each.value.ddos_protection_plan_id
+  edge_zone               = each.value.edge_zone
+  idle_timeout_in_minutes = each.value.idle_timeout_in_minutes
+  ip_tags                 = each.value.ip_tags
+  ip_version              = each.value.ip_version
+  public_ip_prefix_id     = each.value.public_ip_prefix_id
+  reverse_fqdn            = each.value.reverse_fqdn
+  sku                     = each.value.sku
+  sku_tier                = each.value.sku_tier
+  tags                    = var.tags
+  zones                   = each.value.zones != null ? (
+  each.value.zones) : (
+  var.vm_zone == null ? (
+  null) : (
+  [var.vm_zone]))
 
   # To solve issue [#107](https://github.com/Azure/terraform-azurerm-compute/issues/107) we add such block to make `azurerm_network_interface.vm`'s update happen first.
   # Issue #107's root cause is Terraform will try to execute deletion before update, once we tried to delete the public ip, it is still attached on the network interface.
@@ -469,9 +485,9 @@ resource "azurerm_public_ip" "vm" {
 
 # Dynamic public ip address will be got after it's assigned to a vm
 data "azurerm_public_ip" "vm" {
-  count = var.create_public_ip ? 1 : 0
+  for_each = {for ip in azurerm_public_ip.vm : ip.name => ip}
 
-  name                = azurerm_public_ip.vm[count.index].name
+  name                = each.key
   resource_group_name = var.resource_group_name
 
   depends_on = [
@@ -490,16 +506,17 @@ resource "azurerm_network_security_group" "vm" {
 }
 
 locals {
-  network_security_group_id = try(azurerm_network_security_group.vm[0].id, var.network_security_group.id)
+  network_security_group_id   = try(azurerm_network_security_group.vm[0].id, var.network_security_group.id)
+  network_security_group_name = try(azurerm_network_security_group.vm[0].name, var.network_security_group.name)
 }
 
 resource "azurerm_network_security_rule" "vm" {
-  count = var.network_security_group == null && var.nsg_public_open_port != null ? 1 : 0
+  count = var.nsg_public_open_port != null ? 1 : 0
 
   access                      = "Allow"
   direction                   = "Inbound"
   name                        = "allow_remote_${var.nsg_public_open_port}_in_all"
-  network_security_group_name = azurerm_network_security_group.vm[0].name
+  network_security_group_name = local.network_security_group_name
   priority                    = 101
   protocol                    = "Tcp"
   resource_group_name         = var.resource_group_name
@@ -508,20 +525,39 @@ resource "azurerm_network_security_rule" "vm" {
   destination_port_range      = var.nsg_public_open_port
   source_address_prefixes     = var.nsg_source_address_prefixes
   source_port_range           = "*"
+
+  lifecycle {
+    precondition {
+      condition     = var.network_security_group == null ? true : (var.network_security_group.name != null)
+      error_message = "`network_security_group.name` is required when `nsg_public_open_port` is not `null` and `network_security_group` is not `null`."
+    }
+  }
 }
 
 resource "azurerm_network_interface" "vm" {
   location                      = var.location
-  name                          = "${var.vm_name}-nic"
+  name                          = coalesce(var.new_network_interface.name, "${var.vm_name}-nic")
   resource_group_name           = var.resource_group_name
-  enable_accelerated_networking = var.enable_accelerated_networking
+  dns_servers                   = var.new_network_interface.dns_servers
+  edge_zone                     = var.new_network_interface.edge_zone
+  enable_accelerated_networking = var.new_network_interface.accelerated_networking_enabled
+  enable_ip_forwarding          = var.new_network_interface.ip_forwarding_enabled
+  internal_dns_name_label       = var.new_network_interface.internal_dns_name_label
   tags                          = var.tags
 
-  ip_configuration {
-    name                          = "${var.vm_name}-ip"
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = try(azurerm_public_ip.vm[0].id, null)
-    subnet_id                     = var.vnet_subnet_id
+  dynamic "ip_configuration" {
+    for_each = local.network_interface_ip_configuration_indexes
+
+    content {
+      name                                               = coalesce(var.new_network_interface.ip_configurations[ip_configuration.value].name, "${var.vm_name}-nic${ip_configuration.value}")
+      subnet_id                                          = var.vnet_subnet_id
+      private_ip_address                                 = var.new_network_interface.ip_configurations[ip_configuration.value].private_ip_address
+      private_ip_address_allocation                      = var.new_network_interface.ip_configurations[ip_configuration.value].private_ip_address_allocation
+      private_ip_address_version                         = var.new_network_interface.ip_configurations[ip_configuration.value].private_ip_address_version
+      public_ip_address_id                               = try(azurerm_public_ip.vm[var.new_network_interface.ip_configurations[ip_configuration.value].public_ip_address_name].id, null)
+      primary                                            = var.new_network_interface.ip_configurations[ip_configuration.value].primary
+      gateway_load_balancer_frontend_ip_configuration_id = var.new_network_interface.ip_configurations[ip_configuration.value].gateway_load_balancer_frontend_ip_configuration_id
+    }
   }
 }
 

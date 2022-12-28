@@ -51,12 +51,6 @@ variable "admin_username" {
   default     = "azureuser"
 }
 
-variable "allocation_method" {
-  description = "Defines how an IP address is assigned. Options are Static or Dynamic."
-  type        = string
-  default     = "Dynamic"
-}
-
 variable "allow_extension_operations" {
   type        = bool
   description = "(Optional) Should Extension Operations be allowed on this Virtual Machine? Defaults to `true`."
@@ -95,13 +89,6 @@ variable "compute_name" {
   default     = null
 }
 
-variable "create_public_ip" {
-  type        = bool
-  description = "Whether create a public IP and assign it to the vm or not."
-  default     = false
-  nullable    = false
-}
-
 variable "custom_data" {
   type        = string
   description = "(Optional) The Base64-Encoded Custom Data which should be used for this Virtual Machine. Changing this forces a new resource to be created."
@@ -134,18 +121,6 @@ variable "edge_zone" {
   type        = string
   description = "(Optional) Specifies the Edge Zone within the Azure Region where this Linux Virtual Machine should exist. Changing this forces a new Virtual Machine to be created."
   default     = null
-}
-
-variable "enable_accelerated_networking" {
-  type        = bool
-  description = "(Optional) Enable accelerated networking on Network interface."
-  default     = false
-}
-
-variable "enable_ssh_key" {
-  type        = bool
-  description = "(Optional) Enable ssh key authentication in Linux virtual Machine."
-  default     = true
 }
 
 variable "encryption_at_host_enabled" {
@@ -186,11 +161,17 @@ variable "max_bid_price" {
 }
 
 variable "network_security_group" {
-  description = "The network security group we'd like to bind with virtual machine. Set this variable will disable the creation of `azurerm_network_security_group` and `azurerm_network_security_rule` resources."
-  type        = object({
-    id = string
+  type = object({
+    id   = string
+    name = optional(string)
   })
-  default = null
+  description = <<-EOT
+  object({
+    id   = "The network security group we'd like to bind with virtual machine. Set this variable will disable the creation of `azurerm_network_security_group` resource."
+    name = "The name of network security group we'd like to bind with virtual machine. Required when `nsg_public_open_port` is not `null` and `network_security_group` is not `null`."
+  })
+  EOT
+  default     = null
   validation {
     condition     = var.network_security_group == null ? true : var.network_security_group.id != null
     error_message = "When `var.network_security_group` is not `null`, `var.network_security_group.id` is required."
@@ -248,6 +229,108 @@ variable "new_dedicated_host_group" {
   default     = null
 }
 
+variable "new_network_interface" {
+  type = object({
+    name              = optional(string)
+    ip_configurations = list(object({
+      name                                               = optional(string)
+      private_ip_address                                 = optional(string)
+      private_ip_address_version                         = optional(string, "IPv4")
+      private_ip_address_allocation                      = optional(string, "Dynamic")
+      public_ip_address_name                             = optional(string)
+      primary                                            = optional(bool, false)
+      gateway_load_balancer_frontend_ip_configuration_id = optional(string)
+    }))
+    dns_servers                    = optional(list(string))
+    edge_zone                      = optional(string)
+    accelerated_networking_enabled = optional(bool, false)
+    ip_forwarding_enabled          = optional(bool, false)
+    internal_dns_name_label        = optional(string)
+  })
+  default = {
+    name              = null
+    ip_configurations = [
+      {
+        name                                               = null
+        private_ip_address                                 = null
+        private_ip_address_version                         = null
+        public_ip_address_name                             = null
+        private_ip_address_allocation                      = null
+        primary                                            = true
+        gateway_load_balancer_frontend_ip_configuration_id = null
+      }
+    ]
+    dns_servers                    = null
+    edge_zone                      = null
+    accelerated_networking_enabled = null
+    ip_forwarding_enabled          = null
+    internal_dns_name_label        = null
+  }
+  nullable = false
+  validation {
+    condition     = var.new_network_interface.ip_configurations == null ? false : length(var.new_network_interface.ip_configurations) > 0
+    error_message = "`new_network_interface.ip_configurations` cannot be `null` or empty."
+  }
+  validation {
+    condition = alltrue([
+      for i in var.new_network_interface.ip_configurations :i != null])
+    error_message = "`new_network_interfaces` cannot contain `null` element."
+  }
+  validation {
+    condition     = length(var.new_network_interface.ip_configurations) == 1 ? true : var.new_network_interface.ip_configurations[0].primary
+    error_message = "`primary` must be true for the first ip_configuration when multiple are specified."
+  }
+}
+
+variable "new_public_ips" {
+  type = list(object({
+    name                    = string
+    allocation_method       = optional(string, "Dynamic")
+    zones                   = optional(list(string))
+    ddos_protection_mode    = optional(string, "VirtualNetworkInherited")
+    ddos_protection_plan_id = optional(string)
+    domain_name_label       = optional(string)
+    edge_zone               = optional(string)
+    idle_timeout_in_minutes = optional(number, 4)
+    ip_tags                 = optional(map(string))
+    ip_version              = optional(string, "IPv4")
+    public_ip_prefix_id     = optional(string)
+    reverse_fqdn            = optional(string)
+    sku                     = optional(string, "Basic")
+    sku_tier                = optional(string, "Regional")
+  }))
+  description = <<-EOT
+  list(object({
+    name                    = "(Optional) Specifies the name of the Public IP. Changing this forces a new Public IP to be created."
+    allocation_method       = "(Optional) Defines the allocation method for this IP address. Possible values are `Static` or `Dynamic`. Defaults to `Dynamic`.  `Dynamic` Public IP Addresses aren't allocated until they're assigned to a resource (such as a Virtual Machine or a Load Balancer) by design within Azure. See `ip_address` argument."
+    zones                   = "(Optional) A collection containing the availability zone to allocate the Public IP in. Changing this forces a new resource to be created. Availability Zones are only supported with a [Standard SKU](https://docs.microsoft.com/azure/virtual-network/virtual-network-ip-addresses-overview-arm#standard) and [in select regions](https://docs.microsoft.com/azure/availability-zones/az-overview) at this time. Standard SKU Public IP Addresses that do not specify a zone are **not** zone-redundant by default."
+    ddos_protection_mode    = "(Optional) The DDoS protection mode of the public IP. Possible values are `Disabled`, `Enabled`, and `VirtualNetworkInherited`. Defaults to `VirtualNetworkInherited`."
+    ddos_protection_plan_id = "(Optional) The ID of DDoS protection plan associated with the public IP. `ddos_protection_plan_id` can only be set when `ddos_protection_mode` is `Enabled`."
+    domain_name_label       = "(Optional) Label for the Domain Name. Will be used to make up the FQDN.  If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system."
+    edge_zone               = "(Optional) Specifies the Edge Zone within the Azure Region where this Public IP should exist. Changing this forces a new Public IP to be created."
+    idle_timeout_in_minutes = "(Optional) Specifies the timeout for the TCP idle connection. The value can be set between 4 and 30 minutes."
+    ip_tags                 = "(Optional) A mapping of IP tags to assign to the public IP. Changing this forces a new resource to be created. IP Tag `RoutingPreference` requires multiple `zones` and `Standard` SKU to be set."
+    ip_version              = "(Optional) The IP Version to use, `IPv6` or `IPv4`. Defaults to `IPv4`. Changing this forces a new resource to be created. Only `static` IP address allocation is supported for IPv6."
+    public_ip_prefix_id     = "(Optional) If specified then public IP address allocated will be provided from the public IP prefix resource. Changing this forces a new resource to be created."
+    reverse_fqdn            = "(Optional) A fully qualified domain name that resolves to this public IP address. If the reverseFqdn is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa domain to the reverse FQDN."
+    sku                     = "(Optional) The SKU of the Public IP. Accepted values are `Basic` and `Standard`. Defaults to `Basic`. Changing this forces a new resource to be created. Public IP Standard SKUs require `allocation_method` to be set to `Static`."
+    sku_tier                = "(Optional) The SKU Tier that should be used for the Public IP. Possible values are `Regional` and `Global`. Defaults to `Regional`. Changing this forces a new resource to be created. When `sku_tier` is set to `Global`, `sku` must be set to `Standard`."
+  }))
+  EOT
+  default     = []
+  nullable    = false
+  validation {
+    condition = length(var.new_public_ips) == length(distinct([
+      for ip in var.new_public_ips : ip.name
+    ]))
+    error_message = "Names in `new_public_ips` must be unique."
+  }
+  validation {
+    condition     = alltrue([for ip in var.new_public_ips : ip.name != null])
+    error_message = "Names in `new_public_ips` must not be `null`."
+  }
+}
+
 variable "patch_assessment_mode" {
   type        = string
   description = "(Optional) Specifies the mode of VM Guest Patching for the Virtual Machine. Possible values are `AutomaticByPlatform` or `ImageDefault`. Defaults to `ImageDefault`."
@@ -283,18 +366,6 @@ variable "provision_vm_agent" {
   type        = bool
   description = "(Optional) Should the Azure VM Agent be provisioned on this Virtual Machine? Defaults to `true`. Changing this forces a new resource to be created. If `provision_vm_agent` is set to `false` then `allow_extension_operations` must also be set to `false`."
   default     = true
-}
-
-variable "public_ip_dns" {
-  description = "Optional globally unique per datacenter region domain name label to apply to each public ip address. e.g. thisvar.varlocation.cloudapp.azure.com where you specify only thisvar here. This is an array of names which will pair up sequentially to the number of public ips defined in var.nb_public_ip. One name or empty string is required for every public ip. If no public ip is desired, then set this to an array with a single empty string."
-  type        = list(string)
-  default     = [null]
-}
-
-variable "public_ip_sku" {
-  description = "Defines the SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic."
-  type        = string
-  default     = "Basic"
 }
 
 variable "nsg_public_open_port" {
@@ -430,12 +501,12 @@ variable "tags" {
   }
 }
 
-variable "user_data" {
+variable "vm_user_data" {
   type        = string
   description = "(Optional) The Base64-Encoded User Data which should be used for this Virtual Machine."
   default     = null
   validation {
-    condition     = var.user_data == null ? true : can(base64decode(var.user_data))
+    condition     = var.vm_user_data == null ? true : can(base64decode(var.vm_user_data))
     error_message = "`user_data` must be either `null` or valid base64 encoded string."
   }
 }
@@ -502,6 +573,43 @@ variable "vm_admin_ssh_key" {
   }))
   EOT
   default     = []
+}
+
+variable "vm_extension" {
+  type = object({
+    name                              = string
+    publisher                         = string
+    type                              = string
+    type_handler_version              = string
+    auto_upgrade_minor_version        = optional(bool)
+    automatic_upgrade_enabled         = optional(bool)
+    failure_suppression_enabled       = optional(bool, false)
+    settings                          = optional(string)
+    protected_settings                = optional(string)
+    protected_settings_from_key_vault = optional(object({
+      secret_url      = string
+      source_vault_id = string
+    }))
+  })
+  description = <<-EOT
+  object({
+    name                              = "(Required) The name of the virtual machine extension peering. Changing this forces a new resource to be created."
+    publisher                         = "(Required) The publisher of the extension, available publishers can be found by using the Azure CLI. Changing this forces a new resource to be created."
+    type                              = "(Required) The type of extension, available types for a publisher can be found using the Azure CLI."
+    type_handler_version              = "(Required) Specifies the version of the extension to use, available versions can be found using the Azure CLI."
+    auto_upgrade_minor_version        = "(Optional) Specifies if the platform deploys the latest minor version update to the `type_handler_version` specified."
+    automatic_upgrade_enabled         = "(Optional) Should the Extension be automatically updated whenever the Publisher releases a new version of this VM Extension?"
+    failure_suppression_enabled       = "(Optional) Should failures from the extension be suppressed? Possible values are `true` or `false`. Defaults to `false`."
+    settings                          = "(Optional) The settings passed to the extension, these are specified as a JSON object in a string."
+    protected_settings                = "(Optional) The protected_settings passed to the extension, like settings, these are specified as a JSON object in a string. "
+    protected_settings_from_key_vault = optional(object({
+      secret_url      = "(Required) The URL to the Key Vault Secret which stores the protected settings."
+      source_vault_id = "(Required) The ID of the source Key Vault."
+    }))
+  })
+  EOT
+  default     = null
+  sensitive   = true # Because `protected_settings` is sensitive
 }
 
 variable "vm_gallery_application" {
@@ -662,7 +770,7 @@ variable "vm_os_version" {
   nullable    = false
 }
 
-variable "vtpm_enabled" {
+variable "vm_vtpm_enabled" {
   type        = bool
   description = "(Optional) Specifies whether vTPM should be enabled on the virtual machine. Changing this forces a new resource to be created."
   default     = null
@@ -677,7 +785,7 @@ variable "vtpm_enabled" {
 # The vm's count is controlled by `var.nb_instances` and public ips' count is controled by `var.nb_public_ip`,
 # it would be hard for us to keep the vm and public ip in the same zone once `var.nb_instances` doesn't equal to `var.nb_public_ip`
 # So, we decide that one module instance supports one zone only to avoid this dilemma.
-variable "zone" {
+variable "vm_zone" {
   description = "(Optional) The Availability Zone which the Virtual Machine should be allocated in, only one zone would be accepted. If set then this module won't create `azurerm_availability_set` resource. Changing this forces a new resource to be created."
   type        = string
   default     = null
