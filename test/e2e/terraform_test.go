@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	test_helper "github.com/Azure/terraform-module-test-helper"
@@ -15,11 +16,16 @@ func TestExamplesBasic(t *testing.T) {
 	}
 	for _, publicIp := range createPublicIp {
 		t.Run(fmt.Sprintf("createPublicIp-%t", publicIp), func(t *testing.T) {
+			vars := map[string]interface{}{
+				"create_public_ip": publicIp,
+			}
+			managedIdentityId := os.Getenv("MSI_ID")
+			if managedIdentityId != "" {
+				vars["managed_identity_principal_id"] = managedIdentityId
+			}
 			test_helper.RunE2ETest(t, "../../", "examples/basic", terraform.Options{
 				Upgrade: true,
-				Vars: map[string]interface{}{
-					"create_public_ip": publicIp,
-				},
+				Vars:    vars,
 			}, func(t *testing.T, output test_helper.TerraformOutput) {
 				vmIdRegex := `/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Compute/virtualMachines/.+`
 				linuxVmId, ok := output["linux_vm_id"]

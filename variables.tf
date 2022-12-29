@@ -1,11 +1,5 @@
-variable "location" {
-  description = "(Required) The Azure location where the Virtual Machine should exist. Changing this forces a new resource to be created."
-  type        = string
-  nullable    = false
-}
-
 variable "image_os" {
-  description = "Enum flag of virtual machine's os system"
+  description = "(Required) Enum flag of virtual machine's os system"
   type        = string
   nullable    = false
   validation {
@@ -14,28 +8,82 @@ variable "image_os" {
   }
 }
 
+variable "location" {
+  description = "(Required) The Azure location where the Virtual Machine should exist. Changing this forces a new resource to be created."
+  type        = string
+  nullable    = false
+}
+
+variable "name" {
+  type        = string
+  description = "(Required) The name of the Virtual Machine. Changing this forces a new resource to be created."
+  nullable    = false
+}
+
+variable "os_disk" {
+  type = object({
+    caching                          = string
+    storage_account_type             = string
+    disk_encryption_set_id           = optional(string)
+    disk_size_gb                     = optional(number)
+    name                             = optional(string)
+    secure_vm_disk_encryption_set_id = optional(string)
+    security_encryption_type         = optional(string)
+    write_accelerator_enabled        = optional(bool, false)
+    diff_disk_settings = optional(object({
+      option    = string
+      placement = optional(string, "CacheDisk")
+    }), null)
+  })
+  description = <<-EOT
+  object({
+    caching                          = "(Required) The Type of Caching which should be used for the Internal OS Disk. Possible values are `None`, `ReadOnly` and `ReadWrite`."
+    storage_account_type             = "(Required) The Type of Storage Account which should back this the Internal OS Disk. Possible values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS`, `StandardSSD_ZRS` and `Premium_ZRS`. Changing this forces a new resource to be created."
+    disk_encryption_set_id           = "(Optional) The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk. Conflicts with `secure_vm_disk_encryption_set_id`. The Disk Encryption Set must have the `Reader` Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault"
+    disk_size_gb                     = "(Optional) The Size of the Internal OS Disk in GB, if you wish to vary from the size used in the image this Virtual Machine is sourced from. If specified this must be equal to or larger than the size of the Image the Virtual Machine is based on. When creating a larger disk than exists in the image you'll need to repartition the disk to use the remaining space."
+    name                             = "(Optional) The name which should be used for the Internal OS Disk. Changing this forces a new resource to be created."
+    secure_vm_disk_encryption_set_id = "(Optional) The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk when the Virtual Machine is a Confidential VM. Conflicts with `disk_encryption_set_id`. Changing this forces a new resource to be created. `secure_vm_disk_encryption_set_id` can only be specified when `security_encryption_type` is set to `DiskWithVMGuestState`."
+    security_encryption_type         = "(Optional) Encryption Type when the Virtual Machine is a Confidential VM. Possible values are `VMGuestStateOnly` and `DiskWithVMGuestState`. Changing this forces a new resource to be created. `vtpm_enabled` must be set to `true` when `security_encryption_type` is specified. `encryption_at_host_enabled` cannot be set to `true` when `security_encryption_type` is set to `DiskWithVMGuestState`."
+    write_accelerator_enabled        = "(Optional) Should Write Accelerator be Enabled for this OS Disk? Defaults to `false`. This requires that the `storage_account_type` is set to `Premium_LRS` and that `caching` is set to `None`."
+    diff_disk_settings               = optional(object({
+      option    = "(Required) Specifies the Ephemeral Disk Settings for the OS Disk. At this time the only possible value is `Local`. Changing this forces a new resource to be created."
+      placement = "(Optional) Specifies where to store the Ephemeral Disk. Possible values are `CacheDisk` and `ResourceDisk`. Defaults to `CacheDisk`. Changing this forces a new resource to be created."
+    }), [])
+  })
+  EOT
+  nullable    = false
+}
+
 variable "resource_group_name" {
   description = "(Required) The name of the Resource Group in which the Virtual Machine should be exist. Changing this forces a new resource to be created."
   type        = string
   nullable    = false
 }
 
-variable "vnet_subnet_id" {
-  description = "The subnet id of the virtual network where the virtual machines will reside."
-  type        = string
-  nullable    = false
-}
-
-variable "vm_name" {
-  type        = string
-  description = "(Required) The name of the Virtual Machine. Changing this forces a new resource to be created."
-  nullable    = false
-}
-
-variable "vm_size" {
+variable "size" {
   description = "(Required) The SKU which should be used for this Virtual Machine, such as `Standard_F2`."
   type        = string
   nullable    = false
+}
+
+variable "subnet_id" {
+  description = "(Required) The subnet id of the virtual network where the virtual machines will reside."
+  type        = string
+  nullable    = false
+}
+
+variable "additional_unattend_contents" {
+  type = list(object({
+    content = string
+    setting = string
+  }))
+  description = <<-EOT
+  list(object({
+    content = "(Required) The XML formatted content that is added to the unattend.xml file for the specified path and component. Changing this forces a new resource to be created."
+    setting = "(Required) The name of the setting to which the content applies. Possible values are `AutoLogon` and `FirstLogonCommands`. Changing this forces a new resource to be created."
+  }))
+  EOT
+  default     = []
 }
 
 variable "admin_password" {
@@ -43,6 +91,20 @@ variable "admin_password" {
   type        = string
   default     = null
   sensitive   = true
+}
+
+variable "admin_ssh_keys" {
+  type = set(object({
+    public_key = string
+    username   = string
+  }))
+  description = <<-EOT
+  set(object({
+    public_key = "(Required) The Public Key which should be used for authentication, which needs to be at least 2048-bit and in `ssh-rsa` format. Changing this forces a new resource to be created."
+    username   = "(Required) The Username for which this Public SSH Key should be configured. Changing this forces a new resource to be created. The Azure VM Agent only allows creating SSH Keys at the path `/home/{username}/.ssh/authorized_keys` - as such this public key will be written to the authorized keys file."
+  }))
+  EOT
+  default     = []
 }
 
 variable "admin_username" {
@@ -53,7 +115,13 @@ variable "admin_username" {
 
 variable "allow_extension_operations" {
   type        = bool
-  description = "(Optional) Should Extension Operations be allowed on this Virtual Machine? Defaults to `true`."
+  description = "(Optional) Should Extension Operations be allowed on this Virtual Machine? Defaults to `false`."
+  default     = false
+}
+
+variable "automatic_updates_enabled" {
+  type        = bool
+  description = "(Optional) Specifies if Automatic Updates are Enabled for the Windows Virtual Machine. Changing this forces a new resource to be created. Defaults to `true`."
   default     = true
 }
 
@@ -70,11 +138,10 @@ variable "boot_diagnostics" {
   nullable    = false
 }
 
-variable "boot_diagnostics_sa_type" {
-  description = "(Optional) Storage account type for boot diagnostics."
+variable "boot_diagnostics_storage_account_uri" {
   type        = string
-  default     = "Standard_LRS"
-  nullable    = false
+  description = "(Optional) The Primary/Secondary Endpoint for the Azure Storage Account which should be used to store Boot Diagnostics, including Console Output and Screenshots from the Hypervisor."
+  default     = null
 }
 
 variable "capacity_reservation_group_id" {
@@ -99,15 +166,15 @@ variable "custom_data" {
   }
 }
 
-variable "dedicated_host_id" {
-  type        = string
-  description = "(Optional) The ID of a Dedicated Host where this machine should be run on. Conflicts with `dedicated_host_group_id`."
-  default     = null
-}
-
 variable "dedicated_host_group_id" {
   type        = string
   description = "(Optional) The ID of a Dedicated Host Group that this Linux Virtual Machine should be run within. Conflicts with `dedicated_host_id`."
+  default     = null
+}
+
+variable "dedicated_host_id" {
+  type        = string
+  description = "(Optional) The ID of a Dedicated Host where this machine should be run on. Conflicts with `dedicated_host_group_id`."
   default     = null
 }
 
@@ -141,11 +208,42 @@ variable "extensions_time_budget" {
   default     = "PT1H30M"
 }
 
-variable "is_marketplace_image" {
-  description = "Boolean flag to notify when the image comes from the marketplace."
+variable "gallery_application" {
+  type = list(object({
+    version_id             = string
+    configuration_blob_uri = optional(string)
+    order                  = optional(number, 0)
+    tag                    = optional(string)
+  }))
+  description = <<-EOT
+  list(object({
+    version_id             = "(Required) Specifies the Gallery Application Version resource ID."
+    configuration_blob_uri = "(Optional) Specifies the URI to an Azure Blob that will replace the default configuration for the package if provided."
+    order                  = "(Optional) Specifies the order in which the packages have to be installed. Possible values are between `0` and `2,147,483,647`."
+    tag                    = "(Optional) Specifies a passthrough value for more generic context. This field can be any valid `string` value."
+  }))
+  EOT
+  default     = []
+}
+
+variable "hotpatching_enabled" {
   type        = bool
-  nullable    = false
+  description = "(Optional) Should the VM be patched without requiring a reboot? Possible values are `true` or `false`. Defaults to `false`. For more information about hot patching please see the [product documentation](https://docs.microsoft.com/azure/automanage/automanage-hotpatch). Hotpatching can only be enabled if the `patch_mode` is set to `AutomaticByPlatform`, the `provision_vm_agent` is set to `true`, your `source_image_reference` references a hotpatching enabled image, and the VM's `size` is set to a [Azure generation 2](https://docs.microsoft.com/azure/virtual-machines/generation-2#generation-2-vm-sizes) VM. An example of how to correctly configure a Windows Virtual Machine to use the `hotpatching_enabled` field can be found in the [`./examples/virtual-machines/windows/hotpatching-enabled`](https://github.com/hashicorp/terraform-provider-azurerm/tree/main/examples/virtual-machines/windows/hotpatching-enabled) directory within the GitHub Repository."
   default     = false
+}
+
+variable "identity" {
+  type = object({
+    type         = string
+    identity_ids = optional(set(string))
+  })
+  description = <<-EOT
+  object({
+    type         = "(Required) Specifies the type of Managed Service Identity that should be configured on this Linux Virtual Machine. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both)."
+    identity_ids = "(Optional) Specifies a list of User Assigned Managed Identity IDs to be assigned to this Linux Virtual Machine. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`."
+  })
+  EOT
+  default     = null
 }
 
 variable "license_type" {
@@ -178,52 +276,73 @@ variable "network_security_group" {
   }
 }
 
-variable "new_availability_set" {
+variable "new_boot_diagnostics_storage_account" {
   type = object({
-    name                         = string
-    managed                      = optional(bool, true)
-    platform_fault_domain_count  = optional(number, 3)
-    platform_update_domain_count = optional(number, 5)
-    proximity_placement_group_id = optional(string, null)
-  })
-  description = <<-EOT
-  Creates a new Availability Set for Virtual Machines. Cannot be used along with `availability_set_id`, `new_capacity_reservation_group`, `capacity_reservation_group_id`, `zone`.
-  object({
-    name                         = "(Required) Specifies the name of the availability set. Changing this forces a new resource to be created."
-    managed                      = "(Optional) Specifies whether the availability set is managed or not. Possible values are `true` (to specify aligned) or `false` (to specify classic). Default is `true`. Changing this forces a new resource to be created."
-    platform_fault_domain_count  = "(Optional) Specifies the number of fault domains that are used. Defaults to `3`. Changing this forces a new resource to be created."
-    platform_update_domain_count = "(Optional) Specifies the number of update domains that are used. Defaults to `5`. Changing this forces a new resource to be created. The number of Update Domains varies depending on which Azure Region you're using - [a list can be found here](https://github.com/MicrosoftDocs/azure-docs/blob/master/includes/managed-disks-common-fault-domain-region-list.md)."
-    proximity_placement_group_id = "(Optional) The ID of the Proximity Placement Group to which this Virtual Machine should be assigned. Changing this forces a new resource to be created."
-  })
-  EOT
-  default     = null
-}
-
-variable "new_capacity_reservation_group" {
-  type = object({
-    name  = string
-    zones = optional(set(string), null)
-  })
-  description = <<-EOT
-  object({
-    name  = "(Required) Specifies the name of this Capacity Reservation Group. Changing this forces a new resource to be created."
-    zones = "(Optional) Specifies a list of Availability Zones for this Capacity Reservation Group. Changing this forces a new resource to be created."
-  })
-  EOT
-  default     = null
-}
-
-variable "new_dedicated_host_group" {
-  type = object({
-    name                        = string
-    platform_fault_domain_count = number
-    automatic_placement_enabled = optional(bool, false)
+    name                             = optional(string)
+    account_kind                     = optional(string, "StorageV2")
+    account_tier                     = optional(string, "Standard")
+    account_replication_type         = optional(string, "LRS")
+    cross_tenant_replication_enabled = optional(bool, true)
+    access_tier                      = optional(string, "Hot")
+    enable_https_traffic_only        = optional(bool, true)
+    min_tls_version                  = optional(string, "TLS1_2")
+    allow_nested_items_to_be_public  = optional(bool, true)
+    shared_access_key_enabled        = optional(bool, true)
+    public_network_access_enabled    = optional(bool, false)
+    default_to_oauth_authentication  = optional(bool, false)
+    customer_managed_key = optional(object({
+      key_vault_key_id          = string
+      user_assigned_identity_id = string
+    }))
+    blob_properties = optional(object({
+      delete_retention_policy = optional(object({
+        days = optional(number, 7)
+      }))
+      restore_policy = optional(object({
+        days = number
+      }))
+      container_delete_retention_policy = optional(object({
+        days = optional(number, 7)
+      }))
+    }))
+    identity = optional(object({
+      type         = string
+      identity_ids = optional(list(string))
+    }))
   })
   description = <<-EOT
   object({
-    name = "(Required) Specifies the name of the Dedicated Host Group. Changing this forces a new resource to be created."
-    platform_fault_domain_count = "(Required) The number of fault domains that the Dedicated Host Group spans. Changing this forces a new resource to be created."
-    automatic_placement_enabled = "(Optional) Would virtual machines or virtual machine scale sets be placed automatically on this Dedicated Host Group? Defaults to `false`. Changing this forces a new resource to be created."
+    name                             = "(Optional) Specifies the name of the storage account. Only lowercase Alphanumeric characters allowed. Omit this field would generate one. Changing this forces a new resource to be created. This must be unique across the entire Azure service, not just within the resource group."
+    account_kind                     = "(Optional) Defines the Kind of account. Valid options are `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` and `StorageV2`.  Defaults to `StorageV2`. Changing the `account_kind` value from `Storage` to `StorageV2` will not trigger a force new on the storage account, it will only upgrade the existing storage account from `Storage` to `StorageV2` keeping the existing storage account in place."
+    account_tier                     = "(Optional) Defines the Tier to use for this storage account. Valid options are `Standard` and `Premium`. For `BlockBlobStorage` and `FileStorage` accounts only `Premium` is valid. Defaults to `Standard`. Changing this forces a new resource to be created. Blobs with a tier of `Premium` are of account kind `StorageV2`."
+    account_replication_type         = "(Optional) Defines the type of replication to use for this storage account. Valid options are `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` and `RAGZRS`. Defaults to `LRS`. Changing this forces a new resource to be created when types `LRS`, `GRS` and `RAGRS` are changed to `ZRS`, `GZRS` or `RAGZRS` and vice versa."
+    cross_tenant_replication_enabled = "(Optional) Should cross Tenant replication be enabled? Defaults to `true`."
+    access_tier                      = "(Optional) Defines the access tier for `BlobStorage`, `FileStorage` and `StorageV2` accounts. Valid options are `Hot` and `Cool`, defaults to `Hot`."
+    enable_https_traffic_only        = "(Optional) Boolean flag which forces HTTPS if enabled, see [here](https://docs.microsoft.com/azure/storage/storage-require-secure-transfer/) for more information. Defaults to `true`."
+    min_tls_version                  = "(Optional) The minimum supported TLS version for the storage account. Possible values are `TLS1_0`, `TLS1_1`, and `TLS1_2`. Defaults to `TLS1_2` for new storage accounts. At this time `min_tls_version` is only supported in the Public Cloud, China Cloud, and US Government Cloud."
+    allow_nested_items_to_be_public  = "(Optional) Allow or disallow nested items within this Account to opt into being public. Defaults to `true`. At this time `allow_nested_items_to_be_public` is only supported in the Public Cloud, China Cloud, and US Government Cloud."
+    shared_access_key_enabled        = "(Optional) Indicates whether the storage account permits requests to be authorized with the account access key via Shared Key. If false, then all requests, including shared access signatures, must be authorized with Azure Active Directory (Azure AD). The default value is `true`. Terraform uses Shared Key Authorisation to provision Storage Containers, Blobs and other items - when Shared Key Access is disabled, you will need to enable [the `storage_use_azuread` flag in the Provider block](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#storage_use_azuread) to use Azure AD for authentication, however not all Azure Storage services support Active Directory authentication."
+    public_network_access_enabled    = "(Optional) Whether the public network access is enabled? Defaults to `false`."
+    default_to_oauth_authentication  = "(Optional) Default to Azure Active Directory authorization in the Azure portal when accessing the Storage Account. The default value is `false`"
+    customer_managed_key             = optional(object({
+      key_vault_key_id          = "(Required) The ID of the Key Vault Key, supplying a version-less key ID will enable auto-rotation of this key."
+      user_assigned_identity_id = "(Required) The ID of a user assigned identity. `customer_managed_key` can only be set when the `account_kind` is set to `StorageV2` or `account_tier` set to `Premium`, and the identity type is `UserAssigned`."
+    }))
+    blob_properties = optional(object({
+      delete_retention_policy = optional(object({
+        days = "(Optional) Specifies the number of days that the blob should be retained, between `1` and `365` days. Defaults to `7`."
+      }))
+      restore_policy = optional(object({
+        days = "(Required) Specifies the number of days that the blob can be restored, between `1` and `365` days. This must be less than the `days` specified for `delete_retention_policy`."
+      }))
+      container_delete_retention_policy = optional(object({
+        days = "(Optional) Specifies the number of days that the container should be retained, between `1` and `365` days. Defaults to `7`."
+      }))
+    }))
+    identity = optional(object({
+      type         = "(Required) Specifies the type of Managed Service Identity that should be configured on this Storage Account. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both)."
+      identity_ids = "(Optional) Specifies a list of User Assigned Managed Identity IDs to be assigned to this Storage Account. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`."
+    }))
   })
   EOT
   default     = null
@@ -231,7 +350,7 @@ variable "new_dedicated_host_group" {
 
 variable "new_network_interface" {
   type = object({
-    name              = optional(string)
+    name = optional(string)
     ip_configurations = list(object({
       name                                               = optional(string)
       private_ip_address                                 = optional(string)
@@ -247,14 +366,31 @@ variable "new_network_interface" {
     ip_forwarding_enabled          = optional(bool, false)
     internal_dns_name_label        = optional(string)
   })
+  description = <<-EOT
+  name = "(Optional) The name of the Network Interface. Omit this name would generate one. Changing this forces a new resource to be created."
+  ip_configurations = list(object({
+    name                                               = "(Optional) A name used for this IP Configuration. Omit this name would generate one. Changing this forces a new resource to be created."
+    private_ip_address                                 = "(Optional) The Static IP Address which should be used. When `private_ip_address_allocation` is set to `Static` this field can be configured."
+    private_ip_address_version                         = "(Optional) The IP Version to use. Possible values are `IPv4` or `IPv6`. Defaults to `IPv4`."
+    private_ip_address_allocation                      = "(Required) The allocation method used for the Private IP Address. Possible values are `Dynamic` and `Static`. Defaults to `Dynamic`."
+    public_ip_address_id                               = "(Optional) Reference to a Public IP Address to associate with this NIC"
+    primary                                            = "(Optional) Is this the Primary IP Configuration? Must be `true` for the first `ip_configuration`. Defaults to `false`."
+    gateway_load_balancer_frontend_ip_configuration_id = "(Optional) The Frontend IP Configuration ID of a Gateway SKU Load Balancer."
+  }))
+  dns_servers                    = "(Optional) A list of IP Addresses defining the DNS Servers which should be used for this Network Interface. Configuring DNS Servers on the Network Interface will override the DNS Servers defined on the Virtual Network."
+  edge_zone                      = "(Optional) Specifies the Edge Zone within the Azure Region where this Network Interface should exist. Changing this forces a new Network Interface to be created."
+  accelerated_networking_enabled = "(Optional) Should Accelerated Networking be enabled? Defaults to `false`. Only certain Virtual Machine sizes are supported for Accelerated Networking - [more information can be found in this document](https://docs.microsoft.com/azure/virtual-network/create-vm-accelerated-networking-cli). To use Accelerated Networking in an Availability Set, the Availability Set must be deployed onto an Accelerated Networking enabled cluster."
+  ip_forwarding_enabled          = "(Optional) Should IP Forwarding be enabled? Defaults to `false`."
+  internal_dns_name_label        = "(Optional) The (relative) DNS Name used for internal communications between Virtual Machines in the same Virtual Network."
+  EOT
   default = {
-    name              = null
+    name = null
     ip_configurations = [
       {
         name                                               = null
         private_ip_address                                 = null
         private_ip_address_version                         = null
-        public_ip_address_id                             = null
+        public_ip_address_id                               = null
         private_ip_address_allocation                      = null
         primary                                            = true
         gateway_load_balancer_frontend_ip_configuration_id = null
@@ -273,7 +409,7 @@ variable "new_network_interface" {
   }
   validation {
     condition = alltrue([
-      for i in var.new_network_interface.ip_configurations :i != null])
+    for i in var.new_network_interface.ip_configurations : i != null])
     error_message = "`new_network_interfaces` cannot contain `null` element."
   }
   validation {
@@ -282,53 +418,29 @@ variable "new_network_interface" {
   }
 }
 
-variable "new_public_ips" {
-  type = list(object({
-    name                    = string
-    allocation_method       = optional(string, "Dynamic")
-    zones                   = optional(list(string))
-    ddos_protection_mode    = optional(string, "VirtualNetworkInherited")
-    ddos_protection_plan_id = optional(string)
-    domain_name_label       = optional(string)
-    edge_zone               = optional(string)
-    idle_timeout_in_minutes = optional(number, 4)
-    ip_tags                 = optional(map(string))
-    ip_version              = optional(string, "IPv4")
-    public_ip_prefix_id     = optional(string)
-    reverse_fqdn            = optional(string)
-    sku                     = optional(string, "Basic")
-    sku_tier                = optional(string, "Regional")
-  }))
-  description = <<-EOT
-  list(object({
-    name                    = "(Optional) Specifies the name of the Public IP. Changing this forces a new Public IP to be created."
-    allocation_method       = "(Optional) Defines the allocation method for this IP address. Possible values are `Static` or `Dynamic`. Defaults to `Dynamic`.  `Dynamic` Public IP Addresses aren't allocated until they're assigned to a resource (such as a Virtual Machine or a Load Balancer) by design within Azure. See `ip_address` argument."
-    zones                   = "(Optional) A collection containing the availability zone to allocate the Public IP in. Changing this forces a new resource to be created. Availability Zones are only supported with a [Standard SKU](https://docs.microsoft.com/azure/virtual-network/virtual-network-ip-addresses-overview-arm#standard) and [in select regions](https://docs.microsoft.com/azure/availability-zones/az-overview) at this time. Standard SKU Public IP Addresses that do not specify a zone are **not** zone-redundant by default."
-    ddos_protection_mode    = "(Optional) The DDoS protection mode of the public IP. Possible values are `Disabled`, `Enabled`, and `VirtualNetworkInherited`. Defaults to `VirtualNetworkInherited`."
-    ddos_protection_plan_id = "(Optional) The ID of DDoS protection plan associated with the public IP. `ddos_protection_plan_id` can only be set when `ddos_protection_mode` is `Enabled`."
-    domain_name_label       = "(Optional) Label for the Domain Name. Will be used to make up the FQDN.  If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system."
-    edge_zone               = "(Optional) Specifies the Edge Zone within the Azure Region where this Public IP should exist. Changing this forces a new Public IP to be created."
-    idle_timeout_in_minutes = "(Optional) Specifies the timeout for the TCP idle connection. The value can be set between 4 and 30 minutes."
-    ip_tags                 = "(Optional) A mapping of IP tags to assign to the public IP. Changing this forces a new resource to be created. IP Tag `RoutingPreference` requires multiple `zones` and `Standard` SKU to be set."
-    ip_version              = "(Optional) The IP Version to use, `IPv6` or `IPv4`. Defaults to `IPv4`. Changing this forces a new resource to be created. Only `static` IP address allocation is supported for IPv6."
-    public_ip_prefix_id     = "(Optional) If specified then public IP address allocated will be provided from the public IP prefix resource. Changing this forces a new resource to be created."
-    reverse_fqdn            = "(Optional) A fully qualified domain name that resolves to this public IP address. If the reverseFqdn is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa domain to the reverse FQDN."
-    sku                     = "(Optional) The SKU of the Public IP. Accepted values are `Basic` and `Standard`. Defaults to `Basic`. Changing this forces a new resource to be created. Public IP Standard SKUs require `allocation_method` to be set to `Static`."
-    sku_tier                = "(Optional) The SKU Tier that should be used for the Public IP. Possible values are `Regional` and `Global`. Defaults to `Regional`. Changing this forces a new resource to be created. When `sku_tier` is set to `Global`, `sku` must be set to `Standard`."
-  }))
-  EOT
-  default     = []
+variable "nsg_public_open_port" {
+  description = "Remote tcp port to be used for access to the vms created via the nsg applied to the nics."
+  type        = string
+  default     = null
+}
+
+variable "nsg_source_address_prefixes" {
+  description = "(Optional) List of source address prefixes allowed to access var.remote_port."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "os_simple" {
+  description = "Specify UbuntuServer, WindowsServer, RHEL, openSUSE-Leap, CentOS, Debian, CoreOS and SLES to get the latest image version of the specified os.  Do not provide this value if a custom value is used for vm_os_publisher, vm_os_offer, and vm_os_sku."
+  type        = string
+  default     = null
+}
+
+variable "os_version" {
+  description = "The version of the image that you want to deploy. This is ignored when vm_os_id or vm_os_simple are provided."
+  type        = string
+  default     = "latest"
   nullable    = false
-  validation {
-    condition = length(var.new_public_ips) == length(distinct([
-      for ip in var.new_public_ips : ip.name
-    ]))
-    error_message = "Names in `new_public_ips` must be unique."
-  }
-  validation {
-    condition     = alltrue([for ip in var.new_public_ips : ip.name != null])
-    error_message = "Names in `new_public_ips` must not be `null`."
-  }
 }
 
 variable "patch_assessment_mode" {
@@ -343,11 +455,27 @@ variable "patch_mode" {
   default     = null
 }
 
+variable "plan" {
+  type = object({
+    name      = string
+    product   = string
+    publisher = string
+  })
+  description = <<-EOT
+  object({
+    name      = "(Required) Specifies the Name of the Marketplace Image this Virtual Machine should be created from. Changing this forces a new resource to be created."
+    product   = "(Required) Specifies the Product of the Marketplace Image this Virtual Machine should be created from. Changing this forces a new resource to be created."
+    publisher = "(Required) Specifies the Publisher of the Marketplace Image this Virtual Machine should be created from. Changing this forces a new resource to be created."
+  })
+  EOT
+  default     = null
+}
+
 variable "platform_fault_domain" {
   type        = number
   description = "(Optional) Specifies the Platform Fault Domain in which this Virtual Machine should be created. Defaults to `null`, which means this will be automatically assigned to a fault domain that best maintains balance across the available fault domains. `virtual_machine_scale_set_id` is required with it. Changing this forces new Virtual Machine to be created."
   # Why use `null` instead of [`-1`](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_virtual_machine#platform_fault_domain) as default value? `platform_fault_domain` must be set along with `virtual_machine_scale_set_id` so the default value must be `null` for this module if we don't want to use `virtual_machine_scale_set_id`.
-  default     = null
+  default = null
 }
 
 variable "priority" {
@@ -356,22 +484,37 @@ variable "priority" {
   default     = "Regular"
 }
 
-variable "proximity_placement_group_id" {
-  type        = string
-  description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to. Conflicts with `capacity_reservation_group_id` and `capacity_reservation_group`."
-  default     = null
-}
-
 variable "provision_vm_agent" {
   type        = bool
   description = "(Optional) Should the Azure VM Agent be provisioned on this Virtual Machine? Defaults to `true`. Changing this forces a new resource to be created. If `provision_vm_agent` is set to `false` then `allow_extension_operations` must also be set to `false`."
   default     = true
 }
 
-variable "nsg_public_open_port" {
-  description = "Remote tcp port to be used for access to the vms created via the nsg applied to the nics."
+variable "proximity_placement_group_id" {
   type        = string
+  description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to. Conflicts with `capacity_reservation_group_id` and `capacity_reservation_group`."
   default     = null
+}
+
+variable "secrets" {
+  type = list(object({
+    key_vault_id = string
+    certificate = set(object({
+      url   = string
+      store = optional(string)
+    }))
+  }))
+  description = <<-EOT
+  list(object({
+    key_vault_id = "(Required) The ID of the Key Vault from which all Secrets should be sourced."
+    certificate  = set(object({
+      url   = "(Required) The Secret URL of a Key Vault Certificate. This can be sourced from the `secret_id` field within the `azurerm_key_vault_certificate` Resource."
+      store = "(Optional) The certificate store on the Virtual Machine where the certificate should be added. Required when use with Windows Virtual Machine."
+    }))
+  }))
+  EOT
+  default     = []
+  nullable    = false
 }
 
 variable "secure_boot_enabled" {
@@ -380,19 +523,13 @@ variable "secure_boot_enabled" {
   default     = null
 }
 
-variable "nsg_source_address_prefixes" {
-  description = "(Optional) List of source address prefixes allowed to access var.remote_port."
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
-}
-
-variable "vm_source_image_id" {
+variable "source_image_id" {
   type        = string
   description = "(Optional) The ID of the Image which this Virtual Machine should be created from. Changing this forces a new resource to be created. Possible Image ID types include `Image ID`s, `Shared Image ID`s, `Shared Image Version ID`s, `Community Gallery Image ID`s, `Community Gallery Image Version ID`s, `Shared Gallery Image ID`s and `Shared Gallery Image Version ID`s. One of either `source_image_id` or `source_image_reference` must be set."
   default     = null
 }
 
-variable "vm_source_image_reference" {
+variable "source_image_reference" {
   type = object({
     publisher = string
     offer     = string
@@ -410,18 +547,6 @@ variable "vm_source_image_reference" {
   default     = null
 }
 
-variable "ssh_key" {
-  description = "Path to the public key to be used for ssh access to the VM. Only used with non-Windows vms and can be left as-is even if using Windows vms. If specifying a path to a certification on a Windows machine to provision a linux vm use the / in the path versus backslash.e.g. c : /home/id_rsa.pub."
-  type        = string
-  default     = "~/.ssh/id_rsa.pub"
-}
-
-variable "ssh_key_values" {
-  description = "List of Public SSH Keys values to be used for ssh access to the VMs."
-  type        = list(string)
-  default     = []
-}
-
 variable "standard_os" {
   type = map(object({
     publisher = string
@@ -435,7 +560,7 @@ variable "standard_os" {
     sku       = "(Required) Specifies the SKU of the image used to create the virtual machines. Changing this forces a new resource to be created."
   }))
   EOT
-  default     = {
+  default = {
     UbuntuServer = {
       publisher = "Canonical"
       offer     = "UbuntuServer"
@@ -480,18 +605,6 @@ variable "standard_os" {
   nullable = false
 }
 
-variable "storage_account_type" {
-  description = "Defines the type of storage account to be created. Valid options are Standard_LRS, Standard_ZRS, Standard_GRS, Standard_RAGRS, Premium_LRS."
-  type        = string
-  default     = "Premium_LRS"
-}
-
-variable "storage_os_disk_size_gb" {
-  description = "(Optional) Specifies the size of the data disk in gigabytes."
-  type        = number
-  default     = null
-}
-
 variable "tags" {
   type        = map(string)
   description = "A map of the tags to use on the resources that are deployed with this module."
@@ -501,12 +614,32 @@ variable "tags" {
   }
 }
 
-variable "vm_user_data" {
+variable "termination_notification" {
+  type = object({
+    enabled = bool
+    timeout = optional(string, "PT5M")
+  })
+  description = <<-EOT
+  object({
+    enabled = bool
+    timeout = optional(string, "PT5M")
+  })
+  EOT
+  default     = null
+}
+
+variable "timezone" {
+  type        = string
+  description = "(Optional) Specifies the Time Zone which should be used by the Virtual Machine, [the possible values are defined here](https://jackstromberg.com/2017/01/list-of-time-zones-consumed-by-azure/). Changing this forces a new resource to be created."
+  default     = null
+}
+
+variable "user_data" {
   type        = string
   description = "(Optional) The Base64-Encoded User Data which should be used for this Virtual Machine."
   default     = null
   validation {
-    condition     = var.vm_user_data == null ? true : can(base64decode(var.vm_user_data))
+    condition     = var.user_data == null ? true : can(base64decode(var.user_data))
     error_message = "`user_data` must be either `null` or valid base64 encoded string."
   }
 }
@@ -529,63 +662,17 @@ variable "vm_additional_capabilities" {
   default     = null
 }
 
-variable "vm_additional_unattend_contents" {
-  type = list(object({
-    content = string
-    setting = string
-  }))
-  description = <<-EOT
-  list(object({
-    content = "(Required) The XML formatted content that is added to the unattend.xml file for the specified path and component. Changing this forces a new resource to be created."
-    setting = "(Required) The name of the setting to which the content applies. Possible values are `AutoLogon` and `FirstLogonCommands`. Changing this forces a new resource to be created."
-  }))
-  EOT
-  default     = []
-}
-
-variable "vm_automatic_updates_enabled" {
-  type        = bool
-  description = "(Optional) Specifies if Automatic Updates are Enabled for the Windows Virtual Machine. Changing this forces a new resource to be created. Defaults to `true`."
-  default     = true
-}
-
-variable "vm_boot_diagnostics" {
-  type = object({
-    storage_account_uri = optional(string)
-  })
-  description = <<-EOT
-  object({
-    storage_account_uri = "(Optional) The Primary/Secondary Endpoint for the Azure Storage Account which should be used to store Boot Diagnostics, including Console Output and Screenshots from the Hypervisor. Passing a null value will utilize a Managed Storage Account to store Boot Diagnostics"
-  })
-  EOT
-  default     = null
-}
-
-variable "vm_admin_ssh_key" {
-  type = set(object({
-    public_key = string
-    username   = string
-  }))
-  description = <<-EOT
-  set(object({
-    public_key = "(Required) The Public Key which should be used for authentication, which needs to be at least 2048-bit and in `ssh-rsa` format. Changing this forces a new resource to be created."
-    username   = "(Required) The Username for which this Public SSH Key should be configured. Changing this forces a new resource to be created. The Azure VM Agent only allows creating SSH Keys at the path `/home/{username}/.ssh/authorized_keys` - as such this public key will be written to the authorized keys file."
-  }))
-  EOT
-  default     = []
-}
-
 variable "vm_extension" {
   type = object({
-    name                              = string
-    publisher                         = string
-    type                              = string
-    type_handler_version              = string
-    auto_upgrade_minor_version        = optional(bool)
-    automatic_upgrade_enabled         = optional(bool)
-    failure_suppression_enabled       = optional(bool, false)
-    settings                          = optional(string)
-    protected_settings                = optional(string)
+    name                        = string
+    publisher                   = string
+    type                        = string
+    type_handler_version        = string
+    auto_upgrade_minor_version  = optional(bool)
+    automatic_upgrade_enabled   = optional(bool)
+    failure_suppression_enabled = optional(bool, false)
+    settings                    = optional(string)
+    protected_settings          = optional(string)
     protected_settings_from_key_vault = optional(object({
       secret_url      = string
       source_vault_id = string
@@ -612,103 +699,13 @@ variable "vm_extension" {
   sensitive   = true # Because `protected_settings` is sensitive
 }
 
-variable "vm_gallery_application" {
-  type = list(object({
-    version_id             = string
-    configuration_blob_uri = optional(string)
-    order                  = optional(number, 0)
-    tag                    = optional(string)
-  }))
-  description = <<-EOT
-  list(object({
-    version_id             = "(Required) Specifies the Gallery Application Version resource ID."
-    configuration_blob_uri = "(Optional) Specifies the URI to an Azure Blob that will replace the default configuration for the package if provided."
-    order                  = "(Optional) Specifies the order in which the packages have to be installed. Possible values are between `0` and `2,147,483,647`."
-    tag                    = "(Optional) Specifies a passthrough value for more generic context. This field can be any valid `string` value."
-  }))
-  EOT
-  default     = []
-}
-
-variable "vm_hotpatching_enabled" {
+variable "vtpm_enabled" {
   type        = bool
-  description = "(Optional) Should the VM be patched without requiring a reboot? Possible values are `true` or `false`. Defaults to `false`. For more information about hot patching please see the [product documentation](https://docs.microsoft.com/azure/automanage/automanage-hotpatch). Hotpatching can only be enabled if the `patch_mode` is set to `AutomaticByPlatform`, the `provision_vm_agent` is set to `true`, your `source_image_reference` references a hotpatching enabled image, and the VM's `size` is set to a [Azure generation 2](https://docs.microsoft.com/azure/virtual-machines/generation-2#generation-2-vm-sizes) VM. An example of how to correctly configure a Windows Virtual Machine to use the `hotpatching_enabled` field can be found in the [`./examples/virtual-machines/windows/hotpatching-enabled`](https://github.com/hashicorp/terraform-provider-azurerm/tree/main/examples/virtual-machines/windows/hotpatching-enabled) directory within the GitHub Repository."
-  default     = false
-}
-
-variable "vm_identity" {
-  type = object({
-    type         = string
-    identity_ids = optional(set(string))
-  })
-  description = <<-EOT
-  object({
-    type         = "(Required) Specifies the type of Managed Service Identity that should be configured on this Linux Virtual Machine. Possible values are `SystemAssigned`, `UserAssigned`, `SystemAssigned, UserAssigned` (to enable both)."
-    identity_ids = "(Optional) Specifies a list of User Assigned Managed Identity IDs to be assigned to this Linux Virtual Machine. This is required when `type` is set to `UserAssigned` or `SystemAssigned, UserAssigned`."
-  })
-  EOT
+  description = "(Optional) Specifies whether vTPM should be enabled on the virtual machine. Changing this forces a new resource to be created."
   default     = null
 }
 
-variable "vm_plan" {
-  type = object({
-    name      = string
-    product   = string
-    publisher = string
-  })
-  description = <<-EOT
-  object({
-    name      = "(Required) Specifies the Name of the Marketplace Image this Virtual Machine should be created from. Changing this forces a new resource to be created."
-    product   = "(Required) Specifies the Product of the Marketplace Image this Virtual Machine should be created from. Changing this forces a new resource to be created."
-    publisher = "(Required) Specifies the Publisher of the Marketplace Image this Virtual Machine should be created from. Changing this forces a new resource to be created."
-  })
-  EOT
-  default     = null
-}
-
-variable "vm_secrets" {
-  type = list(object({
-    key_vault_id = string
-    certificate  = set(object({
-      url   = string
-      store = optional(string)
-    }))
-  }))
-  description = <<-EOT
-  list(object({
-    key_vault_id = "(Required) The ID of the Key Vault from which all Secrets should be sourced."
-    certificate  = set(object({
-      url   = "(Required) The Secret URL of a Key Vault Certificate. This can be sourced from the `secret_id` field within the `azurerm_key_vault_certificate` Resource."
-      store = "(Optional) The certificate store on the Virtual Machine where the certificate should be added. Required when use with Windows Virtual Machine."
-    }))
-  }))
-  EOT
-  default     = []
-  nullable    = false
-}
-
-variable "vm_termination_notification" {
-  type = object({
-    enabled = bool
-    timeout = optional(string, "PT5M")
-  })
-  description = <<-EOT
-  object({
-    enabled = bool
-    timeout = optional(string, "PT5M")
-  })
-  EOT
-  default     = null
-}
-
-
-variable "vm_timezone" {
-  type        = string
-  description = "(Optional) Specifies the Time Zone which should be used by the Virtual Machine, [the possible values are defined here](https://jackstromberg.com/2017/01/list-of-time-zones-consumed-by-azure/). Changing this forces a new resource to be created."
-  default     = null
-}
-
-variable "vm_winrm_listeners" {
+variable "winrm_listeners" {
   type = set(object({
     protocol        = string
     certificate_url = optional(string)
@@ -723,69 +720,7 @@ variable "vm_winrm_listeners" {
   nullable    = false
 }
 
-variable "vm_os_disk" {
-  type = object({
-    caching                          = string
-    storage_account_type             = string
-    disk_encryption_set_id           = optional(string)
-    disk_size_gb                     = optional(number)
-    name                             = optional(string)
-    secure_vm_disk_encryption_set_id = optional(string)
-    security_encryption_type         = optional(string)
-    write_accelerator_enabled        = optional(bool, false)
-    diff_disk_settings               = optional(object({
-      option    = string
-      placement = optional(string, "CacheDisk")
-    }), null)
-  })
-  description = <<-EOT
-  object({
-    caching                          = "(Required) The Type of Caching which should be used for the Internal OS Disk. Possible values are `None`, `ReadOnly` and `ReadWrite`."
-    storage_account_type             = "(Required) The Type of Storage Account which should back this the Internal OS Disk. Possible values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS`, `StandardSSD_ZRS` and `Premium_ZRS`. Changing this forces a new resource to be created."
-    disk_encryption_set_id           = "(Optional) The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk. Conflicts with `secure_vm_disk_encryption_set_id`. The Disk Encryption Set must have the `Reader` Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault"
-    disk_size_gb                     = "(Optional) The Size of the Internal OS Disk in GB, if you wish to vary from the size used in the image this Virtual Machine is sourced from. If specified this must be equal to or larger than the size of the Image the Virtual Machine is based on. When creating a larger disk than exists in the image you'll need to repartition the disk to use the remaining space."
-    name                             = "(Optional) The name which should be used for the Internal OS Disk. Changing this forces a new resource to be created."
-    secure_vm_disk_encryption_set_id = "(Optional) The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk when the Virtual Machine is a Confidential VM. Conflicts with `disk_encryption_set_id`. Changing this forces a new resource to be created. `secure_vm_disk_encryption_set_id` can only be specified when `security_encryption_type` is set to `DiskWithVMGuestState`."
-    security_encryption_type         = "(Optional) Encryption Type when the Virtual Machine is a Confidential VM. Possible values are `VMGuestStateOnly` and `DiskWithVMGuestState`. Changing this forces a new resource to be created. `vtpm_enabled` must be set to `true` when `security_encryption_type` is specified. `encryption_at_host_enabled` cannot be set to `true` when `security_encryption_type` is set to `DiskWithVMGuestState`."
-    write_accelerator_enabled        = "(Optional) Should Write Accelerator be Enabled for this OS Disk? Defaults to `false`. This requires that the `storage_account_type` is set to `Premium_LRS` and that `caching` is set to `None`."
-    diff_disk_settings               = optional(object({
-      option    = "(Required) Specifies the Ephemeral Disk Settings for the OS Disk. At this time the only possible value is `Local`. Changing this forces a new resource to be created."
-      placement = "(Optional) Specifies where to store the Ephemeral Disk. Possible values are `CacheDisk` and `ResourceDisk`. Defaults to `CacheDisk`. Changing this forces a new resource to be created."
-    }), [])
-  })
-  EOT
-  nullable    = false
-}
-
-variable "vm_os_simple" {
-  description = "Specify UbuntuServer, WindowsServer, RHEL, openSUSE-Leap, CentOS, Debian, CoreOS and SLES to get the latest image version of the specified os.  Do not provide this value if a custom value is used for vm_os_publisher, vm_os_offer, and vm_os_sku."
-  type        = string
-  default     = null
-}
-
-variable "vm_os_version" {
-  description = "The version of the image that you want to deploy. This is ignored when vm_os_id or vm_os_simple are provided."
-  type        = string
-  default     = "latest"
-  nullable    = false
-}
-
-variable "vm_vtpm_enabled" {
-  type        = bool
-  description = "(Optional) Specifies whether vTPM should be enabled on the virtual machine. Changing this forces a new resource to be created."
-  default     = null
-}
-
-# Why we use `zone` not `zones` as `azurerm_virtual_machine.zones`?
-# `azurerm_virtual_machine.zones` is [a list of single Az](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#zones), the maximum length is `1`
-# so we can only pass one zone per vm instance.
-# Why don't we use [`element`](https://developer.hashicorp.com/terraform/language/functions/element) function?
-# The `element` function act as mod operator, it will iterate the vm instances, meanwhile
-# we must keep the vm and public ip in the same zone.
-# The vm's count is controlled by `var.nb_instances` and public ips' count is controled by `var.nb_public_ip`,
-# it would be hard for us to keep the vm and public ip in the same zone once `var.nb_instances` doesn't equal to `var.nb_public_ip`
-# So, we decide that one module instance supports one zone only to avoid this dilemma.
-variable "vm_zone" {
+variable "zone" {
   description = "(Optional) The Availability Zone which the Virtual Machine should be allocated in, only one zone would be accepted. If set then this module won't create `azurerm_availability_set` resource. Changing this forces a new resource to be created."
   type        = string
   default     = null

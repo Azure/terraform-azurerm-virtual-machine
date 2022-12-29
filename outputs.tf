@@ -1,17 +1,3 @@
-output "availability_set_id" {
-  description = "Id of the availability set where the vm belong to."
-  value       = local.availability_set_id
-}
-
-output "capacity_reservation_group_id" {
-  description = "Id of the capacity reservation group where the vm belong to."
-  value       = local.capacity_reservation_group_id
-}
-
-output "dedicated_host_group_id" {
-  value = local.dedicated_host_group_id
-}
-
 output "network_interface_id" {
   description = "Id of the vm nics provisoned."
   value       = azurerm_network_interface.vm.id
