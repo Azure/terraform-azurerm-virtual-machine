@@ -237,7 +237,7 @@ variable "new_network_interface" {
       private_ip_address                                 = optional(string)
       private_ip_address_version                         = optional(string, "IPv4")
       private_ip_address_allocation                      = optional(string, "Dynamic")
-      public_ip_address_name                             = optional(string)
+      public_ip_address_id                               = optional(string)
       primary                                            = optional(bool, false)
       gateway_load_balancer_frontend_ip_configuration_id = optional(string)
     }))
@@ -254,7 +254,7 @@ variable "new_network_interface" {
         name                                               = null
         private_ip_address                                 = null
         private_ip_address_version                         = null
-        public_ip_address_name                             = null
+        public_ip_address_id                             = null
         private_ip_address_allocation                      = null
         primary                                            = true
         gateway_load_balancer_frontend_ip_configuration_id = null
@@ -277,8 +277,8 @@ variable "new_network_interface" {
     error_message = "`new_network_interfaces` cannot contain `null` element."
   }
   validation {
-    condition     = length(var.new_network_interface.ip_configurations) == 1 ? true : var.new_network_interface.ip_configurations[0].primary
-    error_message = "`primary` must be true for the first ip_configuration when multiple are specified."
+    condition     = var.new_network_interface.ip_configurations[0].primary
+    error_message = "`primary` must be `true` for the first ip_configuration."
   }
 }
 

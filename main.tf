@@ -450,52 +450,6 @@ resource "azurerm_dedicated_host_group" "vm" {
   tags                        = var.tags
 }
 
-resource "azurerm_public_ip" "vm" {
-  for_each = {for ip in var.new_public_ips : ip.name => ip}
-
-  allocation_method       = each.value.allocation_method
-  location                = var.location
-  name                    = each.value.name
-  resource_group_name     = var.resource_group_name
-  domain_name_label       = each.value.domain_name_label
-  ddos_protection_mode    = each.value.ddos_protection_mode
-  ddos_protection_plan_id = each.value.ddos_protection_plan_id
-  edge_zone               = each.value.edge_zone
-  idle_timeout_in_minutes = each.value.idle_timeout_in_minutes
-  ip_tags                 = each.value.ip_tags
-  ip_version              = each.value.ip_version
-  public_ip_prefix_id     = each.value.public_ip_prefix_id
-  reverse_fqdn            = each.value.reverse_fqdn
-  sku                     = each.value.sku
-  sku_tier                = each.value.sku_tier
-  tags                    = var.tags
-  zones                   = each.value.zones != null ? (
-  each.value.zones) : (
-  var.vm_zone == null ? (
-  null) : (
-  [var.vm_zone]))
-
-  # To solve issue [#107](https://github.com/Azure/terraform-azurerm-compute/issues/107) we add such block to make `azurerm_network_interface.vm`'s update happen first.
-  # Issue #107's root cause is Terraform will try to execute deletion before update, once we tried to delete the public ip, it is still attached on the network interface.
-  # Declare this `create_before_destroy` will defer this public ip resource's deletion after creation and update so we can fix the issue.
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Dynamic public ip address will be got after it's assigned to a vm
-data "azurerm_public_ip" "vm" {
-  for_each = {for ip in azurerm_public_ip.vm : ip.name => ip}
-
-  name                = each.key
-  resource_group_name = var.resource_group_name
-
-  depends_on = [
-    azurerm_linux_virtual_machine.vm_linux,
-    azurerm_windows_virtual_machine.vm_windows
-  ]
-}
-
 resource "azurerm_network_security_group" "vm" {
   count = var.network_security_group == null ? 1 : 0
 
@@ -554,7 +508,7 @@ resource "azurerm_network_interface" "vm" {
       private_ip_address                                 = var.new_network_interface.ip_configurations[ip_configuration.value].private_ip_address
       private_ip_address_allocation                      = var.new_network_interface.ip_configurations[ip_configuration.value].private_ip_address_allocation
       private_ip_address_version                         = var.new_network_interface.ip_configurations[ip_configuration.value].private_ip_address_version
-      public_ip_address_id                               = try(azurerm_public_ip.vm[var.new_network_interface.ip_configurations[ip_configuration.value].public_ip_address_name].id, null)
+      public_ip_address_id                               = var.new_network_interface.ip_configurations[ip_configuration.value].public_ip_address_id
       primary                                            = var.new_network_interface.ip_configurations[ip_configuration.value].primary
       gateway_load_balancer_frontend_ip_configuration_id = var.new_network_interface.ip_configurations[ip_configuration.value].gateway_load_balancer_frontend_ip_configuration_id
     }

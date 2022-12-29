@@ -34,33 +34,44 @@ resource "tls_private_key" "ssh" {
 }
 
 locals {
-  linux_vm_name = "ubuntu-${random_pet.pet.id}"
+  linux_vm_name   = "ubuntu-${random_pet.pet.id}"
   windows_vm_name = "windows-${random_pet.pet.id}"
+}
+
+resource "azurerm_public_ip" "pip" {
+  count = var.create_public_ip ? 2 : 0
+
+  allocation_method   = "Dynamic"
+  location            = var.location
+  name                = "pip-${random_pet.pet.id}-${count.index}"
+  resource_group_name = azurerm_resource_group.rg.name
 }
 
 module "linux" {
   source = "../.."
 
-  location                    = var.location
-  image_os                    = "linux"
-  resource_group_name         = azurerm_resource_group.rg.name
-  new_public_ips = var.create_public_ip ? [{
-    name = "linux-pip"
-  }] : []
+  location              = var.location
+  image_os              = "linux"
+  resource_group_name   = azurerm_resource_group.rg.name
   new_network_interface = {
-    ip_configurations = [{
-      public_ip_address_name = var.create_public_ip ? "linux-pip" : null
-    }]
+    ip_configurations = [
+      {
+        public_ip_address_id = try(azurerm_public_ip.pip[0].id, null)
+        primary              = true
+      }
+    ]
   }
   nsg_public_open_port        = var.create_public_ip ? "22" : null
-  nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [jsondecode(data.curl.public_ip[0].response).ip] : [var.nsg_rule_source_address_prefix]) : null
+  nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [
+    jsondecode(data.curl.public_ip[0].response).ip
+  ] : [var.nsg_rule_source_address_prefix]) : null
   vm_admin_ssh_key = [
     {
       public_key = tls_private_key.ssh.public_key_openssh
       username   = "azureuser"
     }
   ]
-  vm_name = local.linux_vm_name
+  vm_name    = local.linux_vm_name
   vm_os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
@@ -83,22 +94,24 @@ resource "random_password" "win_password" {
 module "windows" {
   source = "../.."
 
-  location                    = var.location
-  image_os                    = "windows"
-  resource_group_name         = azurerm_resource_group.rg.name
-  new_public_ips = var.create_public_ip ? [{
-    name = "windows-pip"
-  }] : []
+  location              = var.location
+  image_os              = "windows"
+  resource_group_name   = azurerm_resource_group.rg.name
   new_network_interface = {
-    ip_configurations = [{
-      public_ip_address_name = var.create_public_ip ? "windows-pip" : null
-    }]
+    ip_configurations = [
+      {
+        public_ip_address_id = try(azurerm_public_ip.pip[1].id, null)
+        primary              = true
+      }
+    ]
   }
   nsg_public_open_port        = var.create_public_ip ? "3389" : null
-  nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [jsondecode(data.curl.public_ip[0].response).ip] : [var.nsg_rule_source_address_prefix]) : null
-  admin_password              = random_password.win_password.result
-  vm_name                     = "windows-${random_pet.pet.id}"
-  vm_os_disk = {
+  nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [
+    jsondecode(data.curl.public_ip[0].response).ip
+  ] : [var.nsg_rule_source_address_prefix]) : null
+  admin_password = random_password.win_password.result
+  vm_name        = "windows-${random_pet.pet.id}"
+  vm_os_disk     = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
@@ -110,4 +123,13 @@ module "windows" {
 resource "local_file" "ssh_private_key" {
   filename = "${path.module}/key.pem"
   content  = tls_private_key.ssh.private_key_pem
+}
+
+data "azurerm_public_ip" "pip" {
+  count = var.create_public_ip ? 2 : 0
+
+  name                = azurerm_public_ip.pip[count.index].name
+  resource_group_name = azurerm_resource_group.rg.name
+
+  depends_on = [module.linux, module.windows]
 }
