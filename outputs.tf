@@ -33,6 +33,11 @@ output "vm_name" {
   value       = local.virtual_machine.name
 }
 
+output "vm_virtual_machine_scale_set_id" {
+  description = "The Orchestrated Virtual Machine Scale Set id that this Virtual Machine was created within."
+  value       = local.virtual_machine.virtual_machine_scale_set_id
+}
+
 output "vm_zone" {
   description = "The Availability Zones in which this Virtual Machine is located."
   value       = local.virtual_machine.zone

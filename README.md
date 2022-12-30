@@ -115,14 +115,15 @@ No modules.
 
 ## Outputs
 
-| Name                                                                                                                           | Description                                                                                  |
-|--------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| <a name="output_network_interface_id"></a> [network\_interface\_id](#output\_network\_interface\_id)                           | Id of the vm nics provisoned.                                                                |
-| <a name="output_network_interface_private_ip"></a> [network\_interface\_private\_ip](#output\_network\_interface\_private\_ip) | private ip addresses of the vm nics                                                          |
-| <a name="output_network_security_group_id"></a> [network\_security\_group\_id](#output\_network\_security\_group\_id)          | id of the security group provisioned                                                         |
-| <a name="output_network_security_group_name"></a> [network\_security\_group\_name](#output\_network\_security\_group\_name)    | Name of the security group provisioned, `null` if no security group was created.             |
-| <a name="output_vm_id"></a> [vm\_id](#output\_vm\_id)                                                                          | Virtual machine ids created.                                                                 |
-| <a name="output_vm_identity"></a> [vm\_identity](#output\_vm\_identity)                                                        | map with key `Virtual Machine Id`, value `list of identity` created for the Virtual Machine. |
-| <a name="output_vm_name"></a> [vm\_name](#output\_vm\_name)                                                                    | Virtual machine names created.                                                               |
-| <a name="output_vm_zone"></a> [vm\_zone](#output\_vm\_zone)                                                                    | The Availability Zones in which this Virtual Machine is located.                             |
+| Name                                                                                                                                        | Description                                                                                  |
+|---------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| <a name="output_network_interface_id"></a> [network\_interface\_id](#output\_network\_interface\_id)                                        | Id of the vm nics provisoned.                                                                |
+| <a name="output_network_interface_private_ip"></a> [network\_interface\_private\_ip](#output\_network\_interface\_private\_ip)              | private ip addresses of the vm nics                                                          |
+| <a name="output_network_security_group_id"></a> [network\_security\_group\_id](#output\_network\_security\_group\_id)                       | id of the security group provisioned                                                         |
+| <a name="output_network_security_group_name"></a> [network\_security\_group\_name](#output\_network\_security\_group\_name)                 | Name of the security group provisioned, `null` if no security group was created.             |
+| <a name="output_vm_id"></a> [vm\_id](#output\_vm\_id)                                                                                       | Virtual machine ids created.                                                                 |
+| <a name="output_vm_identity"></a> [vm\_identity](#output\_vm\_identity)                                                                     | map with key `Virtual Machine Id`, value `list of identity` created for the Virtual Machine. |
+| <a name="output_vm_name"></a> [vm\_name](#output\_vm\_name)                                                                                 | Virtual machine names created.                                                               |
+| <a name="output_vm_virtual_machine_scale_set_id"></a> [vm\_virtual\_machine\_scale\_set\_id](#output\_vm\_virtual\_machine\_scale\_set\_id) | The Orchestrated Virtual Machine Scale Set id that this Virtual Machine was created within.  |
+| <a name="output_vm_zone"></a> [vm\_zone](#output\_vm\_zone)                                                                                 | The Availability Zones in which this Virtual Machine is located.                             |
 <!-- END_TF_DOCS -->

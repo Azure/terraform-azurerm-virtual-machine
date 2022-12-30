@@ -5,12 +5,15 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	test_helper "github.com/Azure/terraform-module-test-helper"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExamplesBasic(t *testing.T) {
+	t.Skip()
 	createPublicIp := []bool{
 		false, true,
 	}
@@ -53,4 +56,15 @@ func TestExamplesBasic(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestExamplesVmss(t *testing.T) {
+	test_helper.RunE2ETest(t, "../../", "examples/vmss", terraform.Options{
+		Upgrade: true,
+	}, func(t *testing.T, output test_helper.TerraformOutput) {
+		vmssIdRegex := `/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Compute/virtualMachineScaleSets/.+`
+		vmssId, ok := output["linux_vm_vmss_id"]
+		require.True(t, ok)
+		require.Regexp(t, vmssIdRegex, vmssId)
+	})
 }
