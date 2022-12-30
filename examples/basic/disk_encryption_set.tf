@@ -61,7 +61,7 @@ resource "azurerm_key_vault_key" "storage_account_key" {
 
 resource "azurerm_user_assigned_identity" "storage_account_key_vault" {
   location            = local.resource_group.location
-  name                = "storage_account_${random_pet.pet.id}"
+  name                = "storage_account_${random_id.id.hex}"
   resource_group_name = local.resource_group.name
 }
 

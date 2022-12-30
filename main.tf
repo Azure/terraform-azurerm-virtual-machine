@@ -454,39 +454,39 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
 
 locals {
   virtual_machine = local.is_windows ? {
-    id                            = azurerm_windows_virtual_machine.vm_windows[0].id
-    name                          = azurerm_windows_virtual_machine.vm_windows[0].name
-    network_interface_ids         = azurerm_windows_virtual_machine.vm_windows[0].network_interface_ids
-    availability_set_id           = azurerm_windows_virtual_machine.vm_windows[0].availability_set_id
-    capacity_reservation_group_id = azurerm_windows_virtual_machine.vm_windows[0].capacity_reservation_group_id
-    computer_name                 = azurerm_windows_virtual_machine.vm_windows[0].computer_name
-    dedicated_host_id             = azurerm_windows_virtual_machine.vm_windows[0].dedicated_host_id
-    dedicated_host_group_id       = azurerm_windows_virtual_machine.vm_windows[0].dedicated_host_group_id
-    patch_mode                    = azurerm_windows_virtual_machine.vm_windows[0].patch_mode
-    proximity_placement_group_id  = azurerm_windows_virtual_machine.vm_windows[0].proximity_placement_group_id
-    source_image_id               = azurerm_windows_virtual_machine.vm_windows[0].source_image_id
-    virtual_machine_scale_set_id  = azurerm_windows_virtual_machine.vm_windows[0].virtual_machine_scale_set_id
-    timezone                      = azurerm_windows_virtual_machine.vm_windows[0].timezone
-    zone                          = azurerm_windows_virtual_machine.vm_windows[0].zone
-    identity                      = azurerm_windows_virtual_machine.vm_windows[0].identity
-    source_image_reference        = azurerm_windows_virtual_machine.vm_windows[0].source_image_reference
+    id                            = try(azurerm_windows_virtual_machine.vm_windows[0].id, null)
+    name                          = try(azurerm_windows_virtual_machine.vm_windows[0].name, null)
+    network_interface_ids         = try(azurerm_windows_virtual_machine.vm_windows[0].network_interface_ids, null)
+    availability_set_id           = try(azurerm_windows_virtual_machine.vm_windows[0].availability_set_id, null)
+    capacity_reservation_group_id = try(azurerm_windows_virtual_machine.vm_windows[0].capacity_reservation_group_id, null)
+    computer_name                 = try(azurerm_windows_virtual_machine.vm_windows[0].computer_name, null)
+    dedicated_host_id             = try(azurerm_windows_virtual_machine.vm_windows[0].dedicated_host_id, null)
+    dedicated_host_group_id       = try(azurerm_windows_virtual_machine.vm_windows[0].dedicated_host_group_id, null)
+    patch_mode                    = try(azurerm_windows_virtual_machine.vm_windows[0].patch_mode, null)
+    proximity_placement_group_id  = try(azurerm_windows_virtual_machine.vm_windows[0].proximity_placement_group_id, null)
+    source_image_id               = try(azurerm_windows_virtual_machine.vm_windows[0].source_image_id, null)
+    virtual_machine_scale_set_id  = try(azurerm_windows_virtual_machine.vm_windows[0].virtual_machine_scale_set_id, null)
+    timezone                      = try(azurerm_windows_virtual_machine.vm_windows[0].timezone, null)
+    zone                          = try(azurerm_windows_virtual_machine.vm_windows[0].zone, null)
+    identity                      = try(azurerm_windows_virtual_machine.vm_windows[0].identity, null)
+    source_image_reference        = try(azurerm_windows_virtual_machine.vm_windows[0].source_image_reference, null)
     } : {
-    id                            = azurerm_linux_virtual_machine.vm_linux[0].id
-    name                          = azurerm_linux_virtual_machine.vm_linux[0].name
-    network_interface_ids         = azurerm_linux_virtual_machine.vm_linux[0].network_interface_ids
-    availability_set_id           = azurerm_linux_virtual_machine.vm_linux[0].availability_set_id
-    capacity_reservation_group_id = azurerm_linux_virtual_machine.vm_linux[0].capacity_reservation_group_id
-    computer_name                 = azurerm_linux_virtual_machine.vm_linux[0].computer_name
-    dedicated_host_id             = azurerm_linux_virtual_machine.vm_linux[0].dedicated_host_id
-    dedicated_host_group_id       = azurerm_linux_virtual_machine.vm_linux[0].dedicated_host_group_id
-    patch_mode                    = azurerm_linux_virtual_machine.vm_linux[0].patch_mode
-    proximity_placement_group_id  = azurerm_linux_virtual_machine.vm_linux[0].proximity_placement_group_id
-    source_image_id               = azurerm_linux_virtual_machine.vm_linux[0].source_image_id
-    virtual_machine_scale_set_id  = azurerm_linux_virtual_machine.vm_linux[0].virtual_machine_scale_set_id
+    id                            = try(azurerm_linux_virtual_machine.vm_linux[0].id, null)
+    name                          = try(azurerm_linux_virtual_machine.vm_linux[0].name, null)
+    network_interface_ids         = try(azurerm_linux_virtual_machine.vm_linux[0].network_interface_ids, null)
+    availability_set_id           = try(azurerm_linux_virtual_machine.vm_linux[0].availability_set_id, null)
+    capacity_reservation_group_id = try(azurerm_linux_virtual_machine.vm_linux[0].capacity_reservation_group_id, null)
+    computer_name                 = try(azurerm_linux_virtual_machine.vm_linux[0].computer_name, null)
+    dedicated_host_id             = try(azurerm_linux_virtual_machine.vm_linux[0].dedicated_host_id, null)
+    dedicated_host_group_id       = try(azurerm_linux_virtual_machine.vm_linux[0].dedicated_host_group_id, null)
+    patch_mode                    = try(azurerm_linux_virtual_machine.vm_linux[0].patch_mode, null)
+    proximity_placement_group_id  = try(azurerm_linux_virtual_machine.vm_linux[0].proximity_placement_group_id, null)
+    source_image_id               = try(azurerm_linux_virtual_machine.vm_linux[0].source_image_id, null)
+    virtual_machine_scale_set_id  = try(azurerm_linux_virtual_machine.vm_linux[0].virtual_machine_scale_set_id, null)
     timezone                      = null
-    zone                          = azurerm_linux_virtual_machine.vm_linux[0].zone
-    identity                      = azurerm_linux_virtual_machine.vm_linux[0].identity
-    source_image_reference        = azurerm_linux_virtual_machine.vm_linux[0].source_image_reference
+    zone                          = try(azurerm_linux_virtual_machine.vm_linux[0].zone, null)
+    identity                      = try(azurerm_linux_virtual_machine.vm_linux[0].identity, null)
+    source_image_reference        = try(azurerm_linux_virtual_machine.vm_linux[0].source_image_reference, null)
   }
 }
 

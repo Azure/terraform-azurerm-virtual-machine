@@ -1,12 +1,12 @@
-resource "random_pet" "pet" {
-  length = 1
+resource "random_id" "id" {
+  byte_length = 2
 }
 
 resource "azurerm_resource_group" "rg" {
   count = var.create_resource_group ? 1 : 0
 
   location = var.location
-  name     = coalesce(var.resource_group_name, "terraform-azurerm_virtual-machine-${random_pet.pet.id}")
+  name     = coalesce(var.resource_group_name, "terraform-azurerm_virtual-machine-${random_id.id.hex}")
 }
 
 locals {
@@ -16,18 +16,17 @@ locals {
   }
 }
 
-resource "azurerm_virtual_network" "vnet" {
-  address_space       = ["192.168.0.0/24"]
-  location            = local.resource_group.location
-  name                = "vnet-vm-${random_pet.pet.id}"
-  resource_group_name = local.resource_group.name
-}
+module "vnet" {
+  source  = "Azure/vnet/azurerm"
+  version = "4.0.0"
 
-resource "azurerm_subnet" "subnet" {
-  address_prefixes     = ["192.168.0.0/28"]
-  name                 = "subnet-${random_pet.pet.id}"
-  resource_group_name  = local.resource_group.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
+  resource_group_name = local.resource_group.name
+  use_for_each        = true
+  vnet_location       = local.resource_group.location
+  address_space       = ["192.168.0.0/24"]
+  vnet_name           = "vnet-vm-${random_id.id.hex}"
+  subnet_names        = ["subnet-virtual-machine"]
+  subnet_prefixes     = ["192.168.0.0/28"]
 }
 
 resource "tls_private_key" "ssh" {
@@ -40,17 +39,17 @@ resource "azurerm_public_ip" "pip" {
 
   allocation_method   = "Dynamic"
   location            = local.resource_group.location
-  name                = "pip-${random_pet.pet.id}-${count.index}"
+  name                = "pip-${random_id.id.hex}-${count.index}"
   resource_group_name = local.resource_group.name
 }
 
 module "linux" {
   source = "../.."
 
-  location                   = local.resource_group.location
-  image_os                   = "linux"
-  resource_group_name        = local.resource_group.name
-  allow_extension_operations = false
+  location                             = local.resource_group.location
+  image_os                             = "linux"
+  resource_group_name                  = local.resource_group.name
+  allow_extension_operations           = false
   new_boot_diagnostics_storage_account = {
     customer_managed_key = {
       key_vault_key_id          = azurerm_key_vault_key.storage_account_key.id
@@ -59,14 +58,14 @@ module "linux" {
   }
   new_network_interface = {
     ip_forwarding_enabled = false
-    ip_configurations = [
+    ip_configurations     = [
       {
         public_ip_address_id = try(azurerm_public_ip.pip[0].id, null)
         primary              = true
       }
     ]
   }
-  nsg_public_open_port = var.create_public_ip ? "22" : null
+  nsg_public_open_port        = var.create_public_ip ? "22" : null
   nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [
     try(jsondecode(data.curl.public_ip[0].response).ip, var.my_public_ip)
   ] : [var.nsg_rule_source_address_prefix]) : null
@@ -76,14 +75,14 @@ module "linux" {
       username   = "azureuser"
     }
   ]
-  name = "ubuntu-${random_pet.pet.id}"
+  name    = "ubuntu-${random_id.id.hex}"
   os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
   os_simple = "UbuntuServer"
   size      = var.size
-  subnet_id = azurerm_subnet.subnet.id
+  subnet_id = module.vnet.vnet_subnets[0]
 }
 
 resource "random_password" "win_password" {
@@ -99,10 +98,10 @@ resource "random_password" "win_password" {
 module "windows" {
   source = "../.."
 
-  location                   = local.resource_group.location
-  image_os                   = "windows"
-  resource_group_name        = local.resource_group.name
-  allow_extension_operations = false
+  location                             = local.resource_group.location
+  image_os                             = "windows"
+  resource_group_name                  = local.resource_group.name
+  allow_extension_operations           = false
   new_boot_diagnostics_storage_account = {
     customer_managed_key = {
       key_vault_key_id          = azurerm_key_vault_key.storage_account_key.id
@@ -111,6 +110,7 @@ module "windows" {
   }
   new_network_interface = {
     ip_forwarding_enabled = false
+
     ip_configurations = [
       {
         public_ip_address_id = try(azurerm_public_ip.pip[1].id, null)
@@ -118,19 +118,19 @@ module "windows" {
       }
     ]
   }
-  nsg_public_open_port = var.create_public_ip ? "3389" : null
+  nsg_public_open_port        = var.create_public_ip ? "3389" : null
   nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [
     try(jsondecode(data.curl.public_ip[0].response).ip, var.my_public_ip)
   ] : [var.nsg_rule_source_address_prefix]) : null
   admin_password = random_password.win_password.result
-  name           = "windows-${random_pet.pet.id}"
-  os_disk = {
+  name           = "windows-${random_id.id.hex}"
+  os_disk        = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
   os_simple = "WindowsServer"
   size      = var.size
-  subnet_id = azurerm_subnet.subnet.id
+  subnet_id = module.vnet.vnet_subnets[0]
 }
 
 resource "local_file" "ssh_private_key" {
