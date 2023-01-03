@@ -67,6 +67,17 @@ func TestExamplesVmss(t *testing.T) {
 	})
 }
 
+func TestExamplesDedicatedHostGroup(t *testing.T) {
+	test_helper.RunE2ETest(t, "../../", "examples/dedicated_host", terraform.Options{
+		Upgrade: true,
+	}, func(t *testing.T, output test_helper.TerraformOutput) {
+		dhgIdRegex := `/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Compute/hostGroups/.+`
+		dhgId, ok := output["linux_vm_dedicated_host_group_id"]
+		require.True(t, ok)
+		require.Regexp(t, dhgIdRegex, dhgId)
+	})
+}
+
 func TestExamplesAvailabilitySet(t *testing.T) {
 	test_helper.RunE2ETest(t, "../../", "examples/availability_set", terraform.Options{
 		Upgrade: true,
