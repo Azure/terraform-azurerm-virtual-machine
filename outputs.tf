@@ -18,6 +18,10 @@ output "network_security_group_name" {
   value       = try(azurerm_network_security_group.vm[0].name, null)
 }
 
+output "vm_availability_set_id" {
+  value = local.virtual_machine.availability_set_id
+}
+
 output "vm_id" {
   description = "Virtual machine ids created."
   value       = local.virtual_machine.id

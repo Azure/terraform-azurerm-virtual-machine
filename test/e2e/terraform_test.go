@@ -5,15 +5,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	test_helper "github.com/Azure/terraform-module-test-helper"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExamplesBasic(t *testing.T) {
-	t.Skip()
 	createPublicIp := []bool{
 		false, true,
 	}
@@ -66,5 +64,16 @@ func TestExamplesVmss(t *testing.T) {
 		vmssId, ok := output["linux_vm_vmss_id"]
 		require.True(t, ok)
 		require.Regexp(t, vmssIdRegex, vmssId)
+	})
+}
+
+func TestExamplesAvailabilitySet(t *testing.T) {
+	test_helper.RunE2ETest(t, "../../", "examples/availability_set", terraform.Options{
+		Upgrade: true,
+	}, func(t *testing.T, output test_helper.TerraformOutput) {
+		asIdRegex := `/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Compute/availabilitySets/.+`
+		asId, ok := output["linux_vm_as_id"]
+		require.True(t, ok)
+		require.Regexp(t, asIdRegex, asId)
 	})
 }
