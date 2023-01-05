@@ -51,7 +51,7 @@ module "linux" {
   resource_group_name        = local.resource_group.name
   allow_extension_operations = false
   data_disks = [
-    for i in range(3) : {
+    for i in range(2) : {
       name                 = "linuxdisk${random_id.id.hex}${i}"
       storage_account_type = "Standard_LRS"
       create_option        = "Empty"
@@ -97,7 +97,7 @@ module "linux" {
   size      = var.size
   subnet_id = module.vnet.vnet_subnets[0]
 
-  depends_on = [azurerm_key_vault_access_policy.des-key]
+  depends_on = [azurerm_key_vault_access_policy.des]
 }
 
 resource "random_password" "win_password" {
@@ -118,7 +118,7 @@ module "windows" {
   resource_group_name        = local.resource_group.name
   allow_extension_operations = false
   data_disks = [
-    for i in range(3) : {
+    for i in range(2) : {
       name                 = "windowsdisk${random_id.id.hex}${i}"
       storage_account_type = "Standard_LRS"
       create_option        = "Empty"
@@ -160,7 +160,7 @@ module "windows" {
   size      = var.size
   subnet_id = module.vnet.vnet_subnets[0]
 
-  depends_on = [azurerm_key_vault_access_policy.des-key]
+  depends_on = [azurerm_key_vault_access_policy.des]
 }
 
 resource "local_file" "ssh_private_key" {

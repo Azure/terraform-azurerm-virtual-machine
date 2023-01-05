@@ -96,33 +96,36 @@ resource "azurerm_key_vault_key" "des_key" {
     "verify",
     "wrapKey",
   ]
-  name            = "deskey"
-  key_vault_id    = azurerm_key_vault.example.id
   key_type        = "RSA-HSM"
-  key_size        = 2048
+  key_vault_id    = azurerm_key_vault.example.id
+  name            = "deskey"
   expiration_date = timeadd("${formatdate("YYYY-MM-DD", timestamp())}T00:00:00Z", "168h")
+  key_size        = 2048
 
   depends_on = [
     azurerm_key_vault_access_policy.current_user
   ]
 
+  lifecycle {
+    ignore_changes = [expiration_date]
+  }
 }
 
 resource "azurerm_disk_encryption_set" "example" {
+  key_vault_key_id    = azurerm_key_vault_key.des_key.id
+  location            = local.resource_group.location
   name                = "des"
   resource_group_name = local.resource_group.name
-  location            = local.resource_group.location
-  key_vault_key_id    = azurerm_key_vault_key.des_key.id
 
   identity {
     type = "SystemAssigned"
   }
 }
 
-resource "azurerm_key_vault_access_policy" "des-key" {
+resource "azurerm_key_vault_access_policy" "des" {
   key_vault_id = azurerm_key_vault.example.id
-  tenant_id    = azurerm_disk_encryption_set.example.identity.0.tenant_id
-  object_id    = azurerm_disk_encryption_set.example.identity.0.principal_id
+  object_id    = azurerm_disk_encryption_set.example.identity[0].principal_id
+  tenant_id    = azurerm_disk_encryption_set.example.identity[0].tenant_id
   key_permissions = [
     "Get",
     "WrapKey",

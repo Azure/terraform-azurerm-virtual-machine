@@ -796,43 +796,6 @@ variable "vm_additional_capabilities" {
   default     = null
 }
 
-variable "vm_extension" {
-  type = object({
-    name                        = string
-    publisher                   = string
-    type                        = string
-    type_handler_version        = string
-    auto_upgrade_minor_version  = optional(bool)
-    automatic_upgrade_enabled   = optional(bool)
-    failure_suppression_enabled = optional(bool, false)
-    settings                    = optional(string)
-    protected_settings          = optional(string)
-    protected_settings_from_key_vault = optional(object({
-      secret_url      = string
-      source_vault_id = string
-    }))
-  })
-  description = <<-EOT
-  object({
-    name                              = "(Required) The name of the virtual machine extension peering. Changing this forces a new resource to be created."
-    publisher                         = "(Required) The publisher of the extension, available publishers can be found by using the Azure CLI. Changing this forces a new resource to be created."
-    type                              = "(Required) The type of extension, available types for a publisher can be found using the Azure CLI."
-    type_handler_version              = "(Required) Specifies the version of the extension to use, available versions can be found using the Azure CLI."
-    auto_upgrade_minor_version        = "(Optional) Specifies if the platform deploys the latest minor version update to the `type_handler_version` specified."
-    automatic_upgrade_enabled         = "(Optional) Should the Extension be automatically updated whenever the Publisher releases a new version of this VM Extension?"
-    failure_suppression_enabled       = "(Optional) Should failures from the extension be suppressed? Possible values are `true` or `false`. Defaults to `false`."
-    settings                          = "(Optional) The settings passed to the extension, these are specified as a JSON object in a string."
-    protected_settings                = "(Optional) The protected_settings passed to the extension, like settings, these are specified as a JSON object in a string. "
-    protected_settings_from_key_vault = optional(object({
-      secret_url      = "(Required) The URL to the Key Vault Secret which stores the protected settings."
-      source_vault_id = "(Required) The ID of the source Key Vault."
-    }))
-  })
-  EOT
-  default     = null
-  sensitive   = true # Because `protected_settings` is sensitive
-}
-
 variable "vtpm_enabled" {
   type        = bool
   description = "(Optional) Specifies whether vTPM should be enabled on the virtual machine. Changing this forces a new resource to be created."
