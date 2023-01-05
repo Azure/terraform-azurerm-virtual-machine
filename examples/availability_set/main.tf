@@ -35,8 +35,8 @@ resource "tls_private_key" "ssh" {
 }
 
 resource "azurerm_availability_set" "example" {
-  name                = "as-${random_id.id.hex}"
   location            = local.resource_group.location
+  name                = "as-${random_id.id.hex}"
   resource_group_name = local.resource_group.name
 }
 
@@ -49,26 +49,26 @@ module "linux" {
   allow_extension_operations = false
   availability_set_id        = azurerm_availability_set.example.id
   boot_diagnostics           = false
-  new_network_interface      = {
+  new_network_interface = {
     ip_forwarding_enabled = false
-    ip_configurations     = [
+    ip_configurations = [
       {
-        primary              = true
+        primary = true
       }
     ]
   }
-  admin_ssh_keys              = [
+  admin_ssh_keys = [
     {
       public_key = tls_private_key.ssh.public_key_openssh
       username   = "azureuser"
     }
   ]
-  name    = "ubuntu-${random_id.id.hex}"
+  name = "ubuntu-${random_id.id.hex}"
   os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
-  os_simple                    = "UbuntuServer"
-  size                         = var.size
-  subnet_id                    = module.vnet.vnet_subnets[0]
+  os_simple = "UbuntuServer"
+  size      = var.size
+  subnet_id = module.vnet.vnet_subnets[0]
 }

@@ -19,7 +19,8 @@ output "network_security_group_name" {
 }
 
 output "vm_availability_set_id" {
-  value = local.virtual_machine.availability_set_id
+  description = "The ID of the Availability Set in which the Virtual Machine exists."
+  value       = local.virtual_machine.availability_set_id
 }
 
 output "vm_id" {

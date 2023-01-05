@@ -83,6 +83,28 @@ module "linux" {
   os_simple = "UbuntuServer"
   size      = var.size
   subnet_id = module.vnet.vnet_subnets[0]
+  data_disks = [
+    {
+      name                 = "disk0"
+      storage_account_type = "Standard_LRS"
+      create_option        = "Empty"
+      disk_size_gb         = 1
+      attach_setting = {
+        lun     = 0
+        caching = "ReadWrite"
+      }
+    },
+    {
+      name                 = "disk1"
+      storage_account_type = "Standard_LRS"
+      create_option        = "Empty"
+      disk_size_gb         = 1
+      attach_setting = {
+        lun     = 1
+        caching = "ReadWrite"
+      }
+    }
+  ]
 }
 
 resource "random_password" "win_password" {
