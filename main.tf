@@ -561,11 +561,11 @@ resource "azurerm_network_interface_security_group_association" "test" {
 }
 
 resource "azurerm_managed_disk" "disk" {
-  for_each = { for d in var.data_disks : d.name => d }
+  for_each = { for d in var.data_disks : d.attach_setting.lun => d }
 
   create_option                    = each.value.create_option
   location                         = var.location
-  name                             = each.key
+  name                             = each.value.name
   resource_group_name              = var.resource_group_name
   storage_account_type             = each.value.storage_account_type
   disk_access_id                   = each.value.disk_access_id
@@ -627,12 +627,38 @@ resource "azurerm_managed_disk" "disk" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "attachment" {
-  for_each = { for d in var.data_disks : d.name => d }
+  for_each = { for d in var.data_disks : d.attach_setting.lun => d.attach_setting }
 
-  caching                   = each.value.attach_setting.caching
-  lun                       = each.value.attach_setting.lun
+  caching                   = each.value.caching
+  lun                       = each.value.lun
   managed_disk_id           = azurerm_managed_disk.disk[each.key].id
   virtual_machine_id        = local.virtual_machine.id
-  create_option             = each.value.attach_setting.create_option
-  write_accelerator_enabled = each.value.attach_setting.write_accelerator_enabled
+  create_option             = each.value.create_option
+  write_accelerator_enabled = each.value.write_accelerator_enabled
+}
+
+resource "azurerm_virtual_machine_extension" "extensions" {
+  # The `sensitive` inside `nonsensitive` is a workaround for https://github.com/terraform-linters/tflint-ruleset-azurerm/issues/229
+  for_each = nonsensitive({ for e in var.extensions : e.name => e })
+
+  name                        = each.key
+  publisher                   = each.value.value.publisher
+  type                        = each.value.value.type
+  type_handler_version        = each.value.value.type_handler_version
+  virtual_machine_id          = local.virtual_machine.id
+  auto_upgrade_minor_version  = each.value.value.auto_upgrade_minor_version
+  automatic_upgrade_enabled   = each.value.value.automatic_upgrade_enabled
+  failure_suppression_enabled = each.value.value.failure_suppression_enabled
+  protected_settings          = each.value.value.protected_settings
+  settings                    = each.value.value.settings
+  tags                        = var.tags
+
+  dynamic "protected_settings_from_key_vault" {
+    for_each = each.value.value.protected_settings_from_key_vault == null ? [] : ["protected_settings_from_key_vault"]
+
+    content {
+      secret_url      = each.value.value.protected_settings_from_key_vault.secret_url
+      source_vault_id = each.value.value.protected_settings_from_key_vault.source_vault_id
+    }
+  }
 }

@@ -18,7 +18,7 @@ locals {
   public_ip = try(jsondecode(data.curl.public_ip[0].response).ip, var.my_public_ip)
 }
 
-resource "azurerm_key_vault" "storage_account_vault" {
+resource "azurerm_key_vault" "example" {
   location                    = local.resource_group.location
   name                        = random_string.key_vault_prefix.result
   resource_group_name         = local.resource_group.name
@@ -45,8 +45,8 @@ resource "azurerm_key_vault_key" "storage_account_key" {
     "wrapKey",
   ]
   key_type        = "RSA-HSM"
-  key_vault_id    = azurerm_key_vault.storage_account_vault.id
-  name            = "des-key"
+  key_vault_id    = azurerm_key_vault.example.id
+  name            = "sakey"
   expiration_date = timeadd("${formatdate("YYYY-MM-DD", timestamp())}T00:00:00Z", "168h")
   key_size        = 2048
 
@@ -66,7 +66,7 @@ resource "azurerm_user_assigned_identity" "storage_account_key_vault" {
 }
 
 resource "azurerm_key_vault_access_policy" "storage_account" {
-  key_vault_id = azurerm_key_vault.storage_account_vault.id
+  key_vault_id = azurerm_key_vault.example.id
   object_id    = azurerm_user_assigned_identity.storage_account_key_vault.principal_id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   key_permissions = [
@@ -77,12 +77,55 @@ resource "azurerm_key_vault_access_policy" "storage_account" {
 }
 
 resource "azurerm_key_vault_access_policy" "current_user" {
-  key_vault_id = azurerm_key_vault.storage_account_vault.id
+  key_vault_id = azurerm_key_vault.example.id
   object_id    = coalesce(var.managed_identity_principal_id, data.azurerm_client_config.current.object_id)
   tenant_id    = data.azurerm_client_config.current.tenant_id
   key_permissions = [
     "Get",
     "Create",
     "Delete",
+  ]
+}
+
+resource "azurerm_key_vault_key" "des_key" {
+  key_opts = [
+    "decrypt",
+    "encrypt",
+    "sign",
+    "unwrapKey",
+    "verify",
+    "wrapKey",
+  ]
+  name            = "deskey"
+  key_vault_id    = azurerm_key_vault.example.id
+  key_type        = "RSA-HSM"
+  key_size        = 2048
+  expiration_date = timeadd("${formatdate("YYYY-MM-DD", timestamp())}T00:00:00Z", "168h")
+
+  depends_on = [
+    azurerm_key_vault_access_policy.current_user
+  ]
+
+}
+
+resource "azurerm_disk_encryption_set" "example" {
+  name                = "des"
+  resource_group_name = local.resource_group.name
+  location            = local.resource_group.location
+  key_vault_key_id    = azurerm_key_vault_key.des_key.id
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+resource "azurerm_key_vault_access_policy" "des-key" {
+  key_vault_id = azurerm_key_vault.example.id
+  tenant_id    = azurerm_disk_encryption_set.example.identity.0.tenant_id
+  object_id    = azurerm_disk_encryption_set.example.identity.0.principal_id
+  key_permissions = [
+    "Get",
+    "WrapKey",
+    "UnwrapKey",
   ]
 }

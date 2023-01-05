@@ -259,6 +259,10 @@ variable "data_disks" {
   EOT
   default     = []
   nullable    = false
+  validation {
+    condition     = length(var.data_disks) == length(distinct([for d in var.data_disks : d.attach_setting.lun]))
+    error_message = "`data_disks.attach_setting.lun` must be unique."
+  }
 }
 
 variable "dedicated_host_group_id" {
@@ -295,6 +299,41 @@ variable "eviction_policy" {
   type        = string
   description = "(Optional) Specifies what should happen when the Virtual Machine is evicted for price reasons when using a Spot instance. Possible values are `Deallocate` and `Delete`. Changing this forces a new resource to be created."
   default     = null
+}
+
+variable "extensions" {
+  description = "Argument to create `azurerm_virtual_machine_extension` resource, the argument descriptions could be found at [the document](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension)."
+  type = set(object({
+    name                        = string
+    publisher                   = string
+    type                        = string
+    type_handler_version        = string
+    auto_upgrade_minor_version  = optional(bool)
+    automatic_upgrade_enabled   = optional(bool)
+    failure_suppression_enabled = optional(bool, false)
+    settings                    = optional(string)
+    protected_settings          = optional(string)
+    protected_settings_from_key_vault = optional(object({
+      secret_url      = string
+      source_vault_id = string
+    }))
+  }))
+  # tflint-ignore: terraform_sensitive_variable_no_default
+  default   = []
+  nullable  = false
+  sensitive = true # Because `protected_settings` is sensitive
+  validation {
+    condition = length(var.extensions) == length(distinct([
+      for e in var.extensions : e.type
+    ]))
+    error_message = "`type` in `vm_extensions` must be unique."
+  }
+  validation {
+    condition = length(var.extensions) == length(distinct([
+      for e in var.extensions : e.name
+    ]))
+    error_message = "`name` in `vm_extensions` must be unique."
+  }
 }
 
 variable "extensions_time_budget" {
