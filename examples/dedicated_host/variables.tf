@@ -6,7 +6,7 @@ variable "create_resource_group" {
 
 variable "dedicated_host_sku" {
   type     = string
-  default  = "FSv2-Type4"
+  default  = "FSv2-Type2"
   nullable = false
 }
 
@@ -16,11 +16,6 @@ variable "location" {
   nullable = false
 }
 
-variable "my_public_ip" {
-  type    = string
-  default = null
-}
-
 variable "resource_group_name" {
   type    = string
   default = null
@@ -28,6 +23,6 @@ variable "resource_group_name" {
 
 variable "size" {
   type     = string
-  default  = "Standard_F2"
+  default  = "Standard_F2s_v2"
   nullable = false
 }

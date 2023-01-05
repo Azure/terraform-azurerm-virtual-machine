@@ -35,10 +35,10 @@ resource "tls_private_key" "ssh" {
 }
 
 resource "azurerm_dedicated_host_group" "example" {
-  name                        = "example-dedicated-host-group"
-  resource_group_name         = local.resource_group.name
   location                    = local.resource_group.location
+  name                        = "example-dedicated-host-group"
   platform_fault_domain_count = 2
+  resource_group_name         = local.resource_group.name
   automatic_placement_enabled = true
 }
 
@@ -51,9 +51,9 @@ module "dedicate_host_group" {
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_group_id    = azurerm_dedicated_host_group.example.id
-  new_network_interface      = {
+  new_network_interface = {
     ip_forwarding_enabled = false
-    ip_configurations     = [
+    ip_configurations = [
       {
         primary = true
       }
@@ -65,7 +65,7 @@ module "dedicate_host_group" {
       username   = "azureuser"
     }
   ]
-  name    = "dhg-${random_id.id.hex}"
+  name = "dhg-${random_id.id.hex}"
   os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
@@ -78,11 +78,11 @@ module "dedicate_host_group" {
 }
 
 resource "azurerm_dedicated_host" "example" {
-  name                    = "dh-${random_id.id.hex}"
-  location                = local.resource_group.location
   dedicated_host_group_id = azurerm_dedicated_host_group.example.id
-  sku_name                = var.dedicated_host_sku
+  location                = local.resource_group.location
+  name                    = "dh-${random_id.id.hex}"
   platform_fault_domain   = 1
+  sku_name                = var.dedicated_host_sku
 }
 
 module "dedicate_host" {
@@ -94,9 +94,9 @@ module "dedicate_host" {
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_id          = azurerm_dedicated_host.example.id
-  new_network_interface      = {
+  new_network_interface = {
     ip_forwarding_enabled = false
-    ip_configurations     = [
+    ip_configurations = [
       {
         primary = true
       }
@@ -108,7 +108,7 @@ module "dedicate_host" {
       username   = "azureuser"
     }
   ]
-  name    = "dh-${random_id.id.hex}"
+  name = "dh-${random_id.id.hex}"
   os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"

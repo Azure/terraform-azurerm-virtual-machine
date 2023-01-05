@@ -23,14 +23,14 @@ output "vm_availability_set_id" {
   value       = local.virtual_machine.availability_set_id
 }
 
-output "vm_dedicated_host_id" {
-  description = "The ID of a Dedicated Host where this machine runs on"
-  value       = local.virtual_machine.dedicated_host_id
-}
-
 output "vm_dedicated_host_group_id" {
   description = "The ID of a Dedicated Host Group that this Linux Virtual Machine runs within"
   value       = local.virtual_machine.dedicated_host_group_id
+}
+
+output "vm_dedicated_host_id" {
+  description = "The ID of a Dedicated Host where this machine runs on"
+  value       = local.virtual_machine.dedicated_host_id
 }
 
 output "vm_id" {
