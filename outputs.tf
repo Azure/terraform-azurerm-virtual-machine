@@ -1,21 +1,16 @@
 output "network_interface_id" {
-  description = "Id of the vm nics provisoned."
-  value       = azurerm_network_interface.vm.id
+  description = "Id of the vm nic that created by this module. `null` if `var.network_interface_ids` is provided."
+  value       = try(azurerm_network_interface.vm[0].id, null)
 }
 
 output "network_interface_private_ip" {
-  description = "private ip addresses of the vm nics"
-  value       = azurerm_network_interface.vm.private_ip_address
+  description = "Private ip address of the vm nic that created by this module. `null` if `var.network_interface_ids` is provided."
+  value       = try(azurerm_network_interface.vm[0].private_ip_address, null)
 }
 
 output "network_security_group_id" {
   description = "id of the security group provisioned"
-  value       = local.network_security_group_id
-}
-
-output "network_security_group_name" {
-  description = "Name of the security group provisioned, `null` if no security group was created."
-  value       = try(azurerm_network_security_group.vm[0].name, null)
+  value       = var.network_security_group_id
 }
 
 output "vm_availability_set_id" {

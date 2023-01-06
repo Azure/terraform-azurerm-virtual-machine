@@ -48,6 +48,7 @@ module "dedicate_host_group" {
   location                   = local.resource_group.location
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
+  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_group_id    = azurerm_dedicated_host_group.example.id
@@ -77,6 +78,11 @@ module "dedicate_host_group" {
   depends_on = [azurerm_dedicated_host.example]
 }
 
+resource "azurerm_network_interface_security_group_association" "dhg_nic" {
+  network_interface_id      = module.dedicate_host_group.network_interface_id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
 resource "azurerm_dedicated_host" "example" {
   dedicated_host_group_id = azurerm_dedicated_host_group.example.id
   location                = local.resource_group.location
@@ -91,6 +97,7 @@ module "dedicate_host" {
   location                   = local.resource_group.location
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
+  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_id          = azurerm_dedicated_host.example.id
@@ -116,4 +123,9 @@ module "dedicate_host" {
   os_simple = "UbuntuServer"
   size      = var.size
   subnet_id = module.vnet.vnet_subnets[0]
+}
+
+resource "azurerm_network_interface_security_group_association" "dh_nic" {
+  network_interface_id      = module.dedicate_host.network_interface_id
+  network_security_group_id = azurerm_network_security_group.nsg.id
 }

@@ -92,3 +92,9 @@ func TestExamplesAvailabilitySet(t *testing.T) {
 		require.Regexp(t, asIdRegex, asId)
 	})
 }
+
+func TestExamplesExtensions(t *testing.T) {
+	test_helper.RunE2ETest(t, "../../", "examples/extensions", terraform.Options{
+		Upgrade: true,
+	}, nil)
+}

@@ -4,12 +4,6 @@ variable "create_resource_group" {
   nullable = false
 }
 
-variable "dedicated_host_sku" {
-  type     = string
-  default  = "FSv2-Type2"
-  nullable = false
-}
-
 variable "location" {
   type     = string
   default  = "eastus"
@@ -23,6 +17,6 @@ variable "resource_group_name" {
 
 variable "size" {
   type     = string
-  default  = "Standard_F2s_v2"
+  default  = "Standard_F2"
   nullable = false
 }

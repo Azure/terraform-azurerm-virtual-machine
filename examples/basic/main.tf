@@ -49,6 +49,7 @@ module "linux" {
   location                   = local.resource_group.location
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
+  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   data_disks = [
     for i in range(2) : {
@@ -78,10 +79,6 @@ module "linux" {
       }
     ]
   }
-  nsg_public_open_port = var.create_public_ip ? "22" : null
-  nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [
-    try(jsondecode(data.curl.public_ip[0].response).ip, var.my_public_ip)
-  ] : [var.nsg_rule_source_address_prefix]) : null
   admin_ssh_keys = [
     {
       public_key = tls_private_key.ssh.public_key_openssh
@@ -100,6 +97,11 @@ module "linux" {
   depends_on = [azurerm_key_vault_access_policy.des]
 }
 
+resource "azurerm_network_interface_security_group_association" "linux_nic" {
+  network_interface_id      = module.linux.network_interface_id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
 resource "random_password" "win_password" {
   length      = 20
   lower       = true
@@ -110,12 +112,36 @@ resource "random_password" "win_password" {
   min_special = 1
 }
 
+resource "azurerm_network_interface" "windows_nic" {
+  #checkov:skip=CKV_AZURE_119:It's a demo for how to use public ip
+  count = 2
+
+  location            = local.resource_group.location
+  name                = "win-nic${count.index}"
+  resource_group_name = local.resource_group.name
+
+  ip_configuration {
+    name                          = "nic"
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = count.index == 0 ? try(azurerm_public_ip.pip[1].id, null) : null
+    subnet_id                     = module.vnet.vnet_subnets[0]
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "windows_nic" {
+  count = length(azurerm_network_interface.windows_nic)
+
+  network_interface_id      = azurerm_network_interface.windows_nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
 module "windows" {
   source = "../.."
 
   location                   = local.resource_group.location
   image_os                   = "windows"
   resource_group_name        = local.resource_group.name
+  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   data_disks = [
     for i in range(2) : {
@@ -136,22 +162,10 @@ module "windows" {
       user_assigned_identity_id = azurerm_user_assigned_identity.storage_account_key_vault.id
     }
   }
-  new_network_interface = {
-    ip_forwarding_enabled = false
-
-    ip_configurations = [
-      {
-        public_ip_address_id = try(azurerm_public_ip.pip[1].id, null)
-        primary              = true
-      }
-    ]
-  }
-  nsg_public_open_port = var.create_public_ip ? "3389" : null
-  nsg_source_address_prefixes = var.create_public_ip ? (var.nsg_rule_source_address_prefix == null ? [
-    try(jsondecode(data.curl.public_ip[0].response).ip, var.my_public_ip)
-  ] : [var.nsg_rule_source_address_prefix]) : null
-  admin_password = random_password.win_password.result
-  name           = "windows-${random_id.id.hex}"
+  network_interface_ids = azurerm_network_interface.windows_nic[*].id
+  new_network_interface = null
+  admin_password        = random_password.win_password.result
+  name                  = "windows-${random_id.id.hex}"
   os_disk = {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"

@@ -84,12 +84,10 @@ resource "azurerm_storage_account" "boot_diagnostics" {
 resource "azurerm_linux_virtual_machine" "vm_linux" {
   count = local.is_linux ? 1 : 0
 
-  admin_username = var.admin_username
-  location       = var.location
-  name           = var.name
-  network_interface_ids = [
-    azurerm_network_interface.vm.id
-  ]
+  admin_username                  = var.admin_username
+  location                        = var.location
+  name                            = var.name
+  network_interface_ids           = local.network_interface_ids
   resource_group_name             = var.resource_group_name
   size                            = var.size
   admin_password                  = var.admin_password
@@ -257,19 +255,21 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
       condition     = !var.boot_diagnostics ? true : var.new_boot_diagnostics_storage_account != null || var.boot_diagnostics_storage_account_uri != null
       error_message = "Either `new_boot_diagnostics_storage_account` or `vm_boot_diagnostics_storage_account_uri` must be provided if `boot_diagnostics` is `true`."
     }
+    precondition {
+      condition     = var.network_interface_ids != null || var.new_network_interface != null
+      error_message = "Either `new_network_interface` or `network_interface_ids` must be provided."
+    }
   }
 }
 
 resource "azurerm_windows_virtual_machine" "vm_windows" {
   count = local.is_windows ? 1 : 0
 
-  admin_password = var.admin_password
-  admin_username = var.admin_username
-  location       = var.location
-  name           = var.name
-  network_interface_ids = [
-    azurerm_network_interface.vm.id
-  ]
+  admin_password                = var.admin_password
+  admin_username                = var.admin_username
+  location                      = var.location
+  name                          = var.name
+  network_interface_ids         = local.network_interface_ids
   resource_group_name           = var.resource_group_name
   size                          = var.size
   allow_extension_operations    = var.allow_extension_operations
@@ -449,6 +449,10 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
       condition     = !var.boot_diagnostics ? true : var.new_boot_diagnostics_storage_account != null || var.boot_diagnostics_storage_account_uri != null
       error_message = "Either `new_boot_diagnostics_storage_account` or `vm_boot_diagnostics_storage_account_uri` must be provided if `boot_diagnostics` is `true`."
     }
+    precondition {
+      condition     = var.network_interface_ids != null || var.new_network_interface != null
+      error_message = "Either `new_network_interface` or `network_interface_ids` must be provided."
+    }
   }
 }
 
@@ -490,45 +494,9 @@ locals {
   }
 }
 
-resource "azurerm_network_security_group" "vm" {
-  count = var.network_security_group == null ? 1 : 0
-
-  location            = var.location
-  name                = "${var.name}-nsg"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
-locals {
-  network_security_group_id   = try(azurerm_network_security_group.vm[0].id, var.network_security_group.id)
-  network_security_group_name = try(azurerm_network_security_group.vm[0].name, var.network_security_group.name)
-}
-
-resource "azurerm_network_security_rule" "vm" {
-  count = var.nsg_public_open_port != null ? 1 : 0
-
-  access                      = "Allow"
-  direction                   = "Inbound"
-  name                        = "allow_remote_${var.nsg_public_open_port}_in_all"
-  network_security_group_name = local.network_security_group_name
-  priority                    = 101
-  protocol                    = "Tcp"
-  resource_group_name         = var.resource_group_name
-  description                 = "Allow remote protocol in from all locations"
-  destination_address_prefix  = "*"
-  destination_port_range      = var.nsg_public_open_port
-  source_address_prefixes     = var.nsg_source_address_prefixes
-  source_port_range           = "*"
-
-  lifecycle {
-    precondition {
-      condition     = var.network_security_group == null ? true : (var.network_security_group.name != null)
-      error_message = "`network_security_group.name` is required when `nsg_public_open_port` is not `null` and `network_security_group` is not `null`."
-    }
-  }
-}
-
 resource "azurerm_network_interface" "vm" {
+  count = var.new_network_interface != null ? 1 : 0
+
   location                      = var.location
   name                          = coalesce(var.new_network_interface.name, "${var.name}-nic")
   resource_group_name           = var.resource_group_name
@@ -553,11 +521,19 @@ resource "azurerm_network_interface" "vm" {
       subnet_id                                          = var.subnet_id
     }
   }
+
+  lifecycle {
+    precondition {
+      condition     = var.network_interface_ids == null
+      error_message = "`new_network_interface` cannot be used along with `network_interface_ids`."
+    }
+  }
 }
 
-resource "azurerm_network_interface_security_group_association" "test" {
-  network_interface_id      = azurerm_network_interface.vm.id
-  network_security_group_id = local.network_security_group_id
+locals {
+  network_interface_ids = var.new_network_interface != null ? [
+    azurerm_network_interface.vm[0].id
+  ] : var.network_interface_ids
 }
 
 resource "azurerm_managed_disk" "disk" {
@@ -627,7 +603,9 @@ resource "azurerm_managed_disk" "disk" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "attachment" {
-  for_each = { for d in var.data_disks : d.attach_setting.lun => d.attach_setting }
+  for_each = {
+    for d in var.data_disks : d.attach_setting.lun => d.attach_setting
+  }
 
   caching                   = each.value.caching
   lun                       = each.value.lun
@@ -642,23 +620,25 @@ resource "azurerm_virtual_machine_extension" "extensions" {
   for_each = nonsensitive({ for e in var.extensions : e.name => e })
 
   name                        = each.key
-  publisher                   = each.value.value.publisher
-  type                        = each.value.value.type
-  type_handler_version        = each.value.value.type_handler_version
+  publisher                   = each.value.publisher
+  type                        = each.value.type
+  type_handler_version        = each.value.type_handler_version
   virtual_machine_id          = local.virtual_machine.id
-  auto_upgrade_minor_version  = each.value.value.auto_upgrade_minor_version
-  automatic_upgrade_enabled   = each.value.value.automatic_upgrade_enabled
-  failure_suppression_enabled = each.value.value.failure_suppression_enabled
-  protected_settings          = each.value.value.protected_settings
-  settings                    = each.value.value.settings
+  auto_upgrade_minor_version  = each.value.auto_upgrade_minor_version
+  automatic_upgrade_enabled   = each.value.automatic_upgrade_enabled
+  failure_suppression_enabled = each.value.failure_suppression_enabled
+  protected_settings          = each.value.protected_settings
+  settings                    = each.value.settings
   tags                        = var.tags
 
   dynamic "protected_settings_from_key_vault" {
-    for_each = each.value.value.protected_settings_from_key_vault == null ? [] : ["protected_settings_from_key_vault"]
+    for_each = each.value.protected_settings_from_key_vault == null ? [] : [
+      "protected_settings_from_key_vault"
+    ]
 
     content {
-      secret_url      = each.value.value.protected_settings_from_key_vault.secret_url
-      source_vault_id = each.value.value.protected_settings_from_key_vault.source_vault_id
+      secret_url      = each.value.protected_settings_from_key_vault.secret_url
+      source_vault_id = each.value.protected_settings_from_key_vault.source_vault_id
     }
   }
 }

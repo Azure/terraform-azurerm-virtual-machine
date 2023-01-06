@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "rg" {
   count = var.create_resource_group ? 1 : 0
 
   location = var.location
-  name     = coalesce(var.resource_group_name, "tf-vmmod-dedicated-host-${random_id.id.hex}")
+  name     = coalesce(var.resource_group_name, "tf-vmmod-extensions-${random_id.id.hex}")
 }
 
 locals {
@@ -34,23 +34,16 @@ resource "tls_private_key" "ssh" {
   rsa_bits  = "4096"
 }
 
-resource "azurerm_dedicated_host_group" "example" {
-  location                    = local.resource_group.location
-  name                        = "example-dedicated-host-group"
-  platform_fault_domain_count = 2
-  resource_group_name         = local.resource_group.name
-  automatic_placement_enabled = true
-}
-
-module "dedicate_host_group" {
+module "extensions" {
   source = "../.."
 
-  location                   = local.resource_group.location
-  image_os                   = "linux"
-  resource_group_name        = local.resource_group.name
-  allow_extension_operations = false
+  location                  = local.resource_group.location
+  image_os                  = "linux"
+  resource_group_name       = local.resource_group.name
+  network_security_group_id = azurerm_network_security_group.nsg.id
+  #checkov:skip=CKV_AZURE_50:Demo for extension
+  allow_extension_operations = true
   boot_diagnostics           = false
-  dedicated_host_group_id    = azurerm_dedicated_host_group.example.id
   new_network_interface = {
     ip_forwarding_enabled = false
     ip_configurations = [
@@ -73,47 +66,25 @@ module "dedicate_host_group" {
   os_simple = "UbuntuServer"
   size      = var.size
   subnet_id = module.vnet.vnet_subnets[0]
-
-  depends_on = [azurerm_dedicated_host.example]
-}
-
-resource "azurerm_dedicated_host" "example" {
-  dedicated_host_group_id = azurerm_dedicated_host_group.example.id
-  location                = local.resource_group.location
-  name                    = "dh-${random_id.id.hex}"
-  platform_fault_domain   = 1
-  sku_name                = var.dedicated_host_sku
-}
-
-module "dedicate_host" {
-  source = "../.."
-
-  location                   = local.resource_group.location
-  image_os                   = "linux"
-  resource_group_name        = local.resource_group.name
-  allow_extension_operations = false
-  boot_diagnostics           = false
-  dedicated_host_id          = azurerm_dedicated_host.example.id
-  new_network_interface = {
-    ip_forwarding_enabled = false
-    ip_configurations = [
-      {
-        primary = true
-      }
-    ]
-  }
-  admin_ssh_keys = [
+  extensions = [
     {
-      public_key = tls_private_key.ssh.public_key_openssh
-      username   = "azureuser"
-    }
+      name                 = "hostname"
+      publisher            = "Microsoft.Azure.Extensions",
+      type                 = "CustomScript",
+      type_handler_version = "2.0",
+      settings             = "{\"commandToExecute\": \"hostname && uptime\"}",
+    },
+    {
+      name                       = "AzureMonitorLinuxAgent"
+      publisher                  = "Microsoft.Azure.Monitor",
+      type                       = "AzureMonitorLinuxAgent",
+      type_handler_version       = "1.21",
+      auto_upgrade_minor_version = true
+    },
   ]
-  name = "dh-${random_id.id.hex}"
-  os_disk = {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-  os_simple = "UbuntuServer"
-  size      = var.size
-  subnet_id = module.vnet.vnet_subnets[0]
+}
+
+resource "azurerm_network_interface_security_group_association" "extensions" {
+  network_interface_id      = module.extensions.network_interface_id
+  network_security_group_id = azurerm_network_security_group.nsg.id
 }

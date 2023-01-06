@@ -10,11 +10,6 @@ variable "location" {
   nullable = false
 }
 
-variable "my_public_ip" {
-  type    = string
-  default = null
-}
-
 variable "resource_group_name" {
   type    = string
   default = null

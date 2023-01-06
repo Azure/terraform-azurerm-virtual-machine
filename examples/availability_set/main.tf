@@ -46,6 +46,7 @@ module "linux" {
   location                   = local.resource_group.location
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
+  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   availability_set_id        = azurerm_availability_set.example.id
   boot_diagnostics           = false
@@ -71,4 +72,9 @@ module "linux" {
   os_simple = "UbuntuServer"
   size      = var.size
   subnet_id = module.vnet.vnet_subnets[0]
+}
+
+resource "azurerm_network_interface_security_group_association" "as" {
+  network_interface_id      = module.linux.network_interface_id
+  network_security_group_id = azurerm_network_security_group.nsg.id
 }

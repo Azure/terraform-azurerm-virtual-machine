@@ -26,11 +26,6 @@ variable "my_public_ip" {
   default = null
 }
 
-variable "nsg_rule_source_address_prefix" {
-  type    = string
-  default = null
-}
-
 variable "resource_group_name" {
   type    = string
   default = null

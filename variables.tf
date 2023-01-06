@@ -20,6 +20,12 @@ variable "name" {
   nullable    = false
 }
 
+variable "network_security_group_id" {
+  type        = string
+  description = "(Required) The ID of the Network Security Group which should be attached to the VM's Network Interface. Changing this forces a new resource to be created."
+  nullable    = false
+}
+
 variable "os_disk" {
   type = object({
     caching                          = string
@@ -260,7 +266,9 @@ variable "data_disks" {
   default     = []
   nullable    = false
   validation {
-    condition     = length(var.data_disks) == length(distinct([for d in var.data_disks : d.attach_setting.lun]))
+    condition = length(var.data_disks) == length(distinct([
+      for d in var.data_disks : d.attach_setting.lun
+    ]))
     error_message = "`data_disks.attach_setting.lun` must be unique."
   }
 }
@@ -392,21 +400,17 @@ variable "max_bid_price" {
   default     = -1
 }
 
-variable "network_security_group" {
-  type = object({
-    id   = string
-    name = optional(string)
-  })
-  description = <<-EOT
-  object({
-    id   = "The network security group we'd like to bind with virtual machine. Set this variable will disable the creation of `azurerm_network_security_group` resource."
-    name = "The name of network security group we'd like to bind with virtual machine. Required when `nsg_public_open_port` is not `null` and `network_security_group` is not `null`."
-  })
-  EOT
+variable "network_interface_ids" {
+  type        = list(string)
+  description = "A list of Network Interface IDs which should be attached to this Virtual Machine. The first Network Interface ID in this list will be the Primary Network Interface on the Virtual Machine. Cannot be used along with `new_network_interface`."
   default     = null
   validation {
-    condition     = var.network_security_group == null ? true : var.network_security_group.id != null
-    error_message = "When `var.network_security_group` is not `null`, `var.network_security_group.id` is required."
+    condition     = var.network_interface_ids == null ? true : length(var.network_interface_ids) > 0
+    error_message = "`network_interface_ids` must be `null` or a non-empty list."
+  }
+  validation {
+    condition     = var.network_interface_ids == null ? true : length(var.network_interface_ids) == length(distinct(var.network_interface_ids))
+    error_message = "Element in `network_interface_ids` must be unique."
   }
 }
 
@@ -501,6 +505,7 @@ variable "new_network_interface" {
     internal_dns_name_label        = optional(string)
   })
   description = <<-EOT
+  New Network Interface that should be created and attached to this Virtual Machine. Cannot be used along with `network_interface_ids`.
   name = "(Optional) The name of the Network Interface. Omit this name would generate one. Changing this forces a new resource to be created."
   ip_configurations = list(object({
     name                                               = "(Optional) A name used for this IP Configuration. Omit this name would generate one. Changing this forces a new resource to be created."
@@ -536,32 +541,19 @@ variable "new_network_interface" {
     ip_forwarding_enabled          = null
     internal_dns_name_label        = null
   }
-  nullable = false
   validation {
-    condition     = var.new_network_interface.ip_configurations == null ? false : length(var.new_network_interface.ip_configurations) > 0
+    condition     = var.new_network_interface == null ? true : var.new_network_interface.ip_configurations == null ? false : length(var.new_network_interface.ip_configurations) > 0
     error_message = "`new_network_interface.ip_configurations` cannot be `null` or empty."
   }
   validation {
-    condition = alltrue([
+    condition = var.new_network_interface == null ? true : alltrue([
     for i in var.new_network_interface.ip_configurations : i != null])
-    error_message = "`new_network_interfaces` cannot contain `null` element."
+    error_message = "`new_network_interface.ip_configurations` cannot contain `null` element."
   }
   validation {
-    condition     = var.new_network_interface.ip_configurations[0].primary
+    condition     = var.new_network_interface == null ? true : var.new_network_interface.ip_configurations[0].primary
     error_message = "`primary` must be `true` for the first ip_configuration."
   }
-}
-
-variable "nsg_public_open_port" {
-  description = "Remote tcp port to be used for access to the vms created via the nsg applied to the nics."
-  type        = string
-  default     = null
-}
-
-variable "nsg_source_address_prefixes" {
-  description = "(Optional) List of source address prefixes allowed to access var.remote_port."
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
 }
 
 variable "os_simple" {
