@@ -8,8 +8,9 @@ This Terraform module deploys one Virtual Machines in Azure with the following c
 
 - Ability to specify a simple string to get the [latest marketplace image](https://docs.microsoft.com/cli/azure/vm/image?view=azure-cli-latest) using `var.os_simple`
 - All VMs use [managed disks](https://azure.microsoft.com/services/managed-disks/)
-- Network Security Group (NSG) created with a single remote access rule which opens `var.nsg_public_open_port` port to vm's nic
 - VM nic attached to an existed virtual network subnet via `var.subnet_id`.
+
+This module will only create resources that **belong to** the virtual machine, like managed disk and network interface. It won't create resources that **don't belong to** this virtual machine, like network security group.
 
 ## Example Usage
 
