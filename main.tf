@@ -59,6 +59,8 @@ resource "azurerm_storage_account" "boot_diagnostics" {
       }
     }
   }
+  #checkov:skip=CKV2_AZURE_1
+  #checkov:skip=CKV2_AZURE_18
   dynamic "customer_managed_key" {
     for_each = var.new_boot_diagnostics_storage_account.customer_managed_key == null ? [] : [
       "customer_managed_key"
@@ -150,7 +152,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     }
   }
   dynamic "admin_ssh_key" {
-    for_each = { for key in var.admin_ssh_keys : jsonencode(key) => key }
+    for_each = {for key in var.admin_ssh_keys : jsonencode(key) => key}
 
     content {
       public_key = admin_ssh_key.value.public_key
@@ -165,7 +167,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     }
   }
   dynamic "gallery_application" {
-    for_each = { for app in var.gallery_application : jsonencode(app) => app }
+    for_each = {for app in var.gallery_application : jsonencode(app) => app}
 
     content {
       version_id             = gallery_application.value.version_id
@@ -350,7 +352,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
     }
   }
   dynamic "gallery_application" {
-    for_each = { for app in var.gallery_application : jsonencode(app) => app }
+    for_each = {for app in var.gallery_application : jsonencode(app) => app}
 
     content {
       version_id             = gallery_application.value.version_id
@@ -427,7 +429,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
     }
   }
   dynamic "winrm_listener" {
-    for_each = { for l in var.winrm_listeners : jsonencode(l) => l }
+    for_each = {for l in var.winrm_listeners : jsonencode(l) => l}
 
     content {
       protocol        = winrm_listener.value.protocol
@@ -474,7 +476,7 @@ locals {
     zone                          = try(azurerm_windows_virtual_machine.vm_windows[0].zone, null)
     identity                      = try(azurerm_windows_virtual_machine.vm_windows[0].identity, null)
     source_image_reference        = try(azurerm_windows_virtual_machine.vm_windows[0].source_image_reference, null)
-    } : {
+  } : {
     id                            = try(azurerm_linux_virtual_machine.vm_linux[0].id, null)
     name                          = try(azurerm_linux_virtual_machine.vm_linux[0].name, null)
     network_interface_ids         = try(azurerm_linux_virtual_machine.vm_linux[0].network_interface_ids, null)
@@ -503,6 +505,7 @@ resource "azurerm_network_interface" "vm" {
   dns_servers                   = var.new_network_interface.dns_servers
   edge_zone                     = var.new_network_interface.edge_zone
   enable_accelerated_networking = var.new_network_interface.accelerated_networking_enabled
+  #checkov:skip=CKV_AZURE_118
   enable_ip_forwarding          = var.new_network_interface.ip_forwarding_enabled
   internal_dns_name_label       = var.new_network_interface.internal_dns_name_label
   tags                          = var.tags
@@ -537,7 +540,7 @@ locals {
 }
 
 resource "azurerm_managed_disk" "disk" {
-  for_each = { for d in var.data_disks : d.attach_setting.lun => d }
+  for_each = {for d in var.data_disks : d.attach_setting.lun => d}
 
   create_option                    = each.value.create_option
   location                         = var.location
@@ -617,7 +620,7 @@ resource "azurerm_virtual_machine_data_disk_attachment" "attachment" {
 
 resource "azurerm_virtual_machine_extension" "extensions" {
   # The `sensitive` inside `nonsensitive` is a workaround for https://github.com/terraform-linters/tflint-ruleset-azurerm/issues/229
-  for_each = nonsensitive({ for e in var.extensions : e.name => e })
+  for_each = nonsensitive({for e in var.extensions : e.name => e})
 
   name                        = each.key
   publisher                   = each.value.publisher

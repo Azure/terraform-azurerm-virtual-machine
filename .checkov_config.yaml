@@ -11,9 +11,6 @@ quiet: true
 secrets-scan-file-type: []
 skip-check:
   - CKV_GHA_3
-  - CKV_AZURE_118
-  - CKV2_AZURE_1
-  - CKV2_AZURE_18
 skip-framework:
   - dockerfile
 summary-position: top
