@@ -95,11 +95,11 @@ docker run --rm -v ${pwd}:/src -w /src -e ARM_SUBSCRIPTION_ID -e ARM_TENANT_ID -
 
 Originally created by [lonegunmanb](http://github.com/lonegunmanb)
 
-                ## License
+## License
 
-                [MIT](LICENSE)
+[MIT](LICENSE)
 
-                <!-- BEGIN_TF_DOCS -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name                                                                      | Version        |
