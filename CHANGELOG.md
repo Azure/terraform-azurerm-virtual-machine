@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/HEAD)
+
+**Merged pull requests:**
+
+- Catch iterator variable to avoid potential concurrent error in tests [\#9](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/9) ([lonegunmanb](https://github.com/lonegunmanb))
+
 ## [0.1.0](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/0.1.0) (2023-01-29)
 
 **Merged pull requests:**
