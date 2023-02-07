@@ -49,7 +49,6 @@ module "linux" {
   location                   = local.resource_group.location
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
-  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   data_disks = [
     for i in range(2) : {
@@ -141,7 +140,6 @@ module "windows" {
   location                   = local.resource_group.location
   image_os                   = "windows"
   resource_group_name        = local.resource_group.name
-  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   data_disks = [
     for i in range(2) : {

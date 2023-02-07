@@ -20,12 +20,6 @@ variable "name" {
   nullable    = false
 }
 
-variable "network_security_group_id" {
-  type        = string
-  description = "(Required) The ID of the Network Security Group which should be attached to the VM's Network Interface. Changing this forces a new resource to be created."
-  nullable    = false
-}
-
 variable "os_disk" {
   type = object({
     caching                          = string

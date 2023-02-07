@@ -48,7 +48,6 @@ module "dedicate_host_group" {
   location                   = local.resource_group.location
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
-  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_group_id    = azurerm_dedicated_host_group.example.id
@@ -97,7 +96,6 @@ module "dedicate_host" {
   location                   = local.resource_group.location
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
-  network_security_group_id  = azurerm_network_security_group.nsg.id
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_id          = azurerm_dedicated_host.example.id
