@@ -51,6 +51,7 @@ module "dedicate_host_group" {
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_group_id    = azurerm_dedicated_host_group.example.id
+  admin_username             = "azureuser"
   new_network_interface = {
     ip_forwarding_enabled = false
     ip_configurations = [
@@ -99,6 +100,7 @@ module "dedicate_host" {
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_id          = azurerm_dedicated_host.example.id
+  admin_username             = "azureuser"
   new_network_interface = {
     ip_forwarding_enabled = false
     ip_configurations = [

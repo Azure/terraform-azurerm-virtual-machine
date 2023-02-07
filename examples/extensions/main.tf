@@ -43,6 +43,7 @@ module "extensions" {
   #checkov:skip=CKV_AZURE_50:Demo for extension
   allow_extension_operations = true
   boot_diagnostics           = false
+  admin_username             = "azureuser"
   new_network_interface = {
     ip_forwarding_enabled = false
     ip_configurations = [
