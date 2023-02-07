@@ -16,9 +16,10 @@ func TestExamplesBasic(t *testing.T) {
 		false, true,
 	}
 	for _, publicIp := range createPublicIp {
-		t.Run(fmt.Sprintf("createPublicIp-%t", publicIp), func(t *testing.T) {
+		pip := publicIp
+		t.Run(fmt.Sprintf("createPublicIp-%t", pip), func(t *testing.T) {
 			vars := map[string]interface{}{
-				"create_public_ip": publicIp,
+				"create_public_ip": pip,
 			}
 			managedIdentityId := os.Getenv("MSI_ID")
 			if managedIdentityId != "" {
@@ -35,7 +36,7 @@ func TestExamplesBasic(t *testing.T) {
 				windowsVmId, ok := output["windows_vm_id"]
 				assert.True(t, ok)
 				assert.Regexp(t, vmIdRegex, windowsVmId)
-				if publicIp {
+				if pip {
 					linuxPublicIp, ok := output["linux_public_ip"].(string)
 					assert.True(t, ok)
 					windowsPublicIp, ok := output["windows_public_ip"].(string)
