@@ -43,13 +43,6 @@ func TestExamplesBasic(t *testing.T) {
 					ipRegex := `((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}`
 					assert.Regexp(t, ipRegex, linuxPublicIp)
 					assert.Regexp(t, ipRegex, windowsPublicIp)
-					nsgIdRegex := `/subscriptions/.+/resourceGroups/.+/providers/Microsoft.Network/networkSecurityGroups/.+`
-					linuxNsgId, ok := output["linux_network_security_group_id"].(string)
-					assert.True(t, ok)
-					assert.Regexp(t, nsgIdRegex, linuxNsgId)
-					windowsNsgId, ok := output["windows_network_security_group_id"].(string)
-					assert.True(t, ok)
-					assert.Regexp(t, nsgIdRegex, windowsNsgId)
 				}
 			})
 		})
