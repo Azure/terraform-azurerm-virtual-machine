@@ -14,7 +14,8 @@ func TestExampleUpgrade_basic(t *testing.T) {
 		false, true,
 	}
 	for _, create := range createPublicIp {
-		t.Run(fmt.Sprintf("createPublicIp-%t", create), func(t *testing.T) {
+		pip := create
+		t.Run(fmt.Sprintf("createPublicIp-%t", pip), func(t *testing.T) {
 			currentRoot, err := test_helper.GetCurrentModuleRootPath()
 			if err != nil {
 				t.FailNow()
@@ -24,7 +25,7 @@ func TestExampleUpgrade_basic(t *testing.T) {
 				t.FailNow()
 			}
 			vars := map[string]interface{}{
-				"create_public_ip": create,
+				"create_public_ip": pip,
 			}
 			managedIdentityId := os.Getenv("MSI_ID")
 			if managedIdentityId != "" {
@@ -45,7 +46,8 @@ func TestExampleUpgrade(t *testing.T) {
 		"vmss",
 	}
 	for _, example := range examples {
-		t.Run(example, func(t *testing.T) {
+		e := example
+		t.Run(e, func(t *testing.T) {
 			currentRoot, err := test_helper.GetCurrentModuleRootPath()
 			if err != nil {
 				t.FailNow()
@@ -54,7 +56,7 @@ func TestExampleUpgrade(t *testing.T) {
 			if err != nil {
 				t.FailNow()
 			}
-			test_helper.ModuleUpgradeTest(t, "Azure", "terraform-azurerm-virtual-machine", fmt.Sprintf("examples/%s", example), currentRoot, terraform.Options{
+			test_helper.ModuleUpgradeTest(t, "Azure", "terraform-azurerm-virtual-machine", fmt.Sprintf("examples/%s", e), currentRoot, terraform.Options{
 				Upgrade: true,
 			}, currentMajorVersion)
 		})
