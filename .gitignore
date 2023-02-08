@@ -64,3 +64,5 @@ tfmod-scaffold/
 scripts
 
 test/go.sum
+TestRecord
+**/TestRecord.md.tmp
