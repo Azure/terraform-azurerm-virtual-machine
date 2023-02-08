@@ -50,7 +50,6 @@ module "linux" {
   image_os                   = "linux"
   resource_group_name        = local.resource_group.name
   allow_extension_operations = false
-  admin_username             = "azureuser"
   data_disks = [
     for i in range(2) : {
       name                 = "linuxdisk${random_id.id.hex}${i}"
@@ -163,7 +162,6 @@ module "windows" {
   }
   network_interface_ids = azurerm_network_interface.windows_nic[*].id
   new_network_interface = null
-  admin_username        = "azureuser"
   admin_password        = random_password.win_password.result
   name                  = "windows-${random_id.id.hex}"
   os_disk = {

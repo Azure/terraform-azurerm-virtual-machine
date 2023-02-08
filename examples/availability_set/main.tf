@@ -49,7 +49,6 @@ module "linux" {
   allow_extension_operations = false
   availability_set_id        = azurerm_availability_set.example.id
   boot_diagnostics           = false
-  admin_username             = "azureuser"
   new_network_interface = {
     ip_forwarding_enabled = false
     ip_configurations = [

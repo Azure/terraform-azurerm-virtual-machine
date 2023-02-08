@@ -1,9 +1,3 @@
-variable "admin_username" {
-  description = "(Required) The admin username of the VM that will be deployed."
-  type        = string
-  nullable    = false
-}
-
 variable "image_os" {
   description = "(Required) Enum flag of virtual machine's os system"
   type        = string
@@ -111,6 +105,12 @@ variable "admin_ssh_keys" {
   }))
   EOT
   default     = []
+}
+
+variable "admin_username" {
+  description = "The admin username of the VM that will be deployed."
+  type        = string
+  default     = "azureuser"
 }
 
 variable "allow_extension_operations" {
