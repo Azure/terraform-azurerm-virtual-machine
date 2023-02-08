@@ -59,10 +59,10 @@ module "dedicate_host_group" {
       }
     ]
   }
+  admin_username = "azureuser"
   admin_ssh_keys = [
     {
       public_key = tls_private_key.ssh.public_key_openssh
-      username   = "azureuser"
     }
   ]
   name = "dhg-${random_id.id.hex}"
@@ -107,10 +107,10 @@ module "dedicate_host" {
       }
     ]
   }
+  admin_username = "azureuser"
   admin_ssh_keys = [
     {
       public_key = tls_private_key.ssh.public_key_openssh
-      username   = "azureuser"
     }
   ]
   name = "dh-${random_id.id.hex}"
