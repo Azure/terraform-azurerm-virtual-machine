@@ -8,11 +8,6 @@ output "network_interface_private_ip" {
   value       = try(azurerm_network_interface.vm[0].private_ip_address, null)
 }
 
-output "network_security_group_id" {
-  description = "id of the security group provisioned"
-  value       = var.network_security_group_id
-}
-
 output "vm_availability_set_id" {
   description = "The ID of the Availability Set in which the Virtual Machine exists."
   value       = local.virtual_machine.availability_set_id

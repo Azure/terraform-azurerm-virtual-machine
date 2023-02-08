@@ -37,10 +37,9 @@ resource "tls_private_key" "ssh" {
 module "extensions" {
   source = "../.."
 
-  location                  = local.resource_group.location
-  image_os                  = "linux"
-  resource_group_name       = local.resource_group.name
-  network_security_group_id = azurerm_network_security_group.nsg.id
+  location            = local.resource_group.location
+  image_os            = "linux"
+  resource_group_name = local.resource_group.name
   #checkov:skip=CKV_AZURE_50:Demo for extension
   allow_extension_operations = true
   boot_diagnostics           = false
