@@ -156,7 +156,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 
     content {
       public_key = admin_ssh_key.value.public_key
-      username   = admin_ssh_key.value.username == null ? var.admin_username : admin_ssh_key.value.username
+      username   = coalesce(admin_ssh_key.value.username, var.admin_username)
     }
   }
   dynamic "boot_diagnostics" {
@@ -261,9 +261,10 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
       condition     = var.network_interface_ids != null || var.new_network_interface != null
       error_message = "Either `new_network_interface` or `network_interface_ids` must be provided."
     }
-    precondition { #Public keys can only be added to authorized_keys file for 'admin_username' due to a known issue in Linux provisioning agent.
-      condition     = alltrue([for value in var.admin_ssh_keys : false if value.username != var.admin_username && value.username != null])
-      error_message = "`username` in var.admin_ssh_keys should be the same as `admin_username`."
+    #Public keys can only be added to authorized_keys file for 'admin_username' due to a known issue in Linux provisioning agent.
+    precondition {
+      condition     = alltrue([for value in var.admin_ssh_keys : value.username == var.admin_username || value.username == null])
+      error_message = "`username` in var.admin_ssh_keys should be the same as `admin_username` or `null`."
     }
   }
 }
