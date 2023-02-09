@@ -8,6 +8,11 @@ output "network_interface_private_ip" {
   value       = try(azurerm_network_interface.vm[0].private_ip_address, null)
 }
 
+output "vm_admin_username" {
+  description = "The username of the administrator configured in the Virtual Machine."
+  value       = local.virtual_machine.admin_username
+}
+
 output "vm_availability_set_id" {
   description = "The ID of the Availability Set in which the Virtual Machine exists."
   value       = local.virtual_machine.availability_set_id

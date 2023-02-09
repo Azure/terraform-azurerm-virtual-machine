@@ -467,6 +467,7 @@ locals {
   virtual_machine = local.is_windows ? {
     id                            = try(azurerm_windows_virtual_machine.vm_windows[0].id, null)
     name                          = try(azurerm_windows_virtual_machine.vm_windows[0].name, null)
+    admin_username                = try(azurerm_windows_virtual_machine.vm_windows[0].admin_username, null)
     network_interface_ids         = try(azurerm_windows_virtual_machine.vm_windows[0].network_interface_ids, null)
     availability_set_id           = try(azurerm_windows_virtual_machine.vm_windows[0].availability_set_id, null)
     capacity_reservation_group_id = try(azurerm_windows_virtual_machine.vm_windows[0].capacity_reservation_group_id, null)
@@ -484,6 +485,7 @@ locals {
     } : {
     id                            = try(azurerm_linux_virtual_machine.vm_linux[0].id, null)
     name                          = try(azurerm_linux_virtual_machine.vm_linux[0].name, null)
+    admin_username                = try(azurerm_linux_virtual_machine.vm_linux[0].admin_username, null)
     network_interface_ids         = try(azurerm_linux_virtual_machine.vm_linux[0].network_interface_ids, null)
     availability_set_id           = try(azurerm_linux_virtual_machine.vm_linux[0].availability_set_id, null)
     capacity_reservation_group_id = try(azurerm_linux_virtual_machine.vm_linux[0].capacity_reservation_group_id, null)
