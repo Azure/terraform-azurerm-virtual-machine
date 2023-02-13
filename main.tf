@@ -156,7 +156,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
 
     content {
       public_key = admin_ssh_key.value.public_key
-      username   = admin_ssh_key.value.username
+      username   = coalesce(admin_ssh_key.value.username, var.admin_username)
     }
   }
   dynamic "boot_diagnostics" {
@@ -260,6 +260,11 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     precondition {
       condition     = var.network_interface_ids != null || var.new_network_interface != null
       error_message = "Either `new_network_interface` or `network_interface_ids` must be provided."
+    }
+    #Public keys can only be added to authorized_keys file for 'admin_username' due to a known issue in Linux provisioning agent.
+    precondition {
+      condition     = alltrue([for value in var.admin_ssh_keys : value.username == var.admin_username || value.username == null])
+      error_message = "`username` in var.admin_ssh_keys should be the same as `admin_username` or `null`."
     }
   }
 }
@@ -462,6 +467,7 @@ locals {
   virtual_machine = local.is_windows ? {
     id                            = try(azurerm_windows_virtual_machine.vm_windows[0].id, null)
     name                          = try(azurerm_windows_virtual_machine.vm_windows[0].name, null)
+    admin_username                = try(azurerm_windows_virtual_machine.vm_windows[0].admin_username, null)
     network_interface_ids         = try(azurerm_windows_virtual_machine.vm_windows[0].network_interface_ids, null)
     availability_set_id           = try(azurerm_windows_virtual_machine.vm_windows[0].availability_set_id, null)
     capacity_reservation_group_id = try(azurerm_windows_virtual_machine.vm_windows[0].capacity_reservation_group_id, null)
@@ -479,6 +485,7 @@ locals {
     } : {
     id                            = try(azurerm_linux_virtual_machine.vm_linux[0].id, null)
     name                          = try(azurerm_linux_virtual_machine.vm_linux[0].name, null)
+    admin_username                = try(azurerm_linux_virtual_machine.vm_linux[0].admin_username, null)
     network_interface_ids         = try(azurerm_linux_virtual_machine.vm_linux[0].network_interface_ids, null)
     availability_set_id           = try(azurerm_linux_virtual_machine.vm_linux[0].availability_set_id, null)
     capacity_reservation_group_id = try(azurerm_linux_virtual_machine.vm_linux[0].capacity_reservation_group_id, null)

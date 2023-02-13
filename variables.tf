@@ -96,21 +96,22 @@ variable "admin_password" {
 variable "admin_ssh_keys" {
   type = set(object({
     public_key = string
-    username   = string
+    username   = optional(string)
   }))
   description = <<-EOT
   set(object({
     public_key = "(Required) The Public Key which should be used for authentication, which needs to be at least 2048-bit and in `ssh-rsa` format. Changing this forces a new resource to be created."
-    username   = "(Required) The Username for which this Public SSH Key should be configured. Changing this forces a new resource to be created. The Azure VM Agent only allows creating SSH Keys at the path `/home/{username}/.ssh/authorized_keys` - as such this public key will be written to the authorized keys file."
+    username   = "(Optional) The Username for which this Public SSH Key should be configured. Changing this forces a new resource to be created. The Azure VM Agent only allows creating SSH Keys at the path `/home/{admin_username}/.ssh/authorized_keys` - as such this public key will be written to the authorized keys file. If no username is provided this module will use var.admin_username."
   }))
   EOT
   default     = []
 }
 
 variable "admin_username" {
-  description = "The admin username of the VM that will be deployed."
+  description = "(Optional) The admin username of the VM that will be deployed."
   type        = string
   default     = "azureuser"
+  nullable    = false
 }
 
 variable "allow_extension_operations" {

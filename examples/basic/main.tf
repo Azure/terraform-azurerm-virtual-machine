@@ -78,10 +78,10 @@ module "linux" {
       }
     ]
   }
+  admin_username = "azureuser"
   admin_ssh_keys = [
     {
       public_key = tls_private_key.ssh.public_key_openssh
-      username   = "azureuser"
     }
   ]
   name = "ubuntu-${random_id.id.hex}"
@@ -162,6 +162,7 @@ module "windows" {
   }
   network_interface_ids = azurerm_network_interface.windows_nic[*].id
   new_network_interface = null
+  admin_username        = "azureuser"
   admin_password        = random_password.win_password.result
   name                  = "windows-${random_id.id.hex}"
   os_disk = {
