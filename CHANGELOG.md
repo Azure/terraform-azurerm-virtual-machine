@@ -4,6 +4,7 @@
 
 **Merged pull requests:**
 
+- var.admin\_username is required, var.admin\_ssh\_keys.\*.username is optional and in case its present should be equal to var.admin\_username [\#11](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/11) ([juanjojulian](https://github.com/juanjojulian))
 - removed network\_security\_group\_id variable and output as its not needed nor used [\#10](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/10) ([juanjojulian](https://github.com/juanjojulian))
 - Catch iterator variable to avoid potential concurrent error in tests [\#9](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/9) ([lonegunmanb](https://github.com/lonegunmanb))
 - Bump github.com/Azure/terraform-module-test-helper from 0.7.1 to 0.8.1 in /test [\#8](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/8) ([dependabot[bot]](https://github.com/apps/dependabot))
