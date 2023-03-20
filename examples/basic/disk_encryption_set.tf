@@ -130,5 +130,6 @@ resource "azurerm_key_vault_access_policy" "des" {
     "Get",
     "WrapKey",
     "UnwrapKey",
+    "GetRotationPolicy",
   ]
 }
