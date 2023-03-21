@@ -4,6 +4,7 @@
 
 **Merged pull requests:**
 
+- Bump github.com/Azure/terraform-module-test-helper from 0.9.1 to 0.10.0 in /test [\#17](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/17) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump github.com/gruntwork-io/terratest from 0.41.10 to 0.41.11 in /test [\#14](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/14) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump github.com/Azure/terraform-module-test-helper from 0.8.1 to 0.9.1 in /test [\#13](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/13) ([dependabot[bot]](https://github.com/apps/dependabot))
 - var.admin\_username is required, var.admin\_ssh\_keys.\*.username is optional and in case its present should be equal to var.admin\_username [\#11](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/11) ([juanjojulian](https://github.com/juanjojulian))
