@@ -5,6 +5,7 @@
 **Merged pull requests:**
 
 - Fix broken example [\#22](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/22) ([lonegunmanb](https://github.com/lonegunmanb))
+- Bump github.com/Azure/terraform-module-test-helper from 0.10.0 to 0.12.0 in /test [\#19](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/19) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump github.com/Azure/terraform-module-test-helper from 0.9.1 to 0.10.0 in /test [\#17](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/17) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump github.com/gruntwork-io/terratest from 0.41.10 to 0.41.11 in /test [\#14](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/14) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump github.com/Azure/terraform-module-test-helper from 0.8.1 to 0.9.1 in /test [\#13](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/13) ([dependabot[bot]](https://github.com/apps/dependabot))
