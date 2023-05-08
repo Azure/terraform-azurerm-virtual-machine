@@ -4,6 +4,7 @@
 
 **Merged pull requests:**
 
+- add tracing tag toggle variables and update readme [\#28](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/28) ([lonegunmanb](https://github.com/lonegunmanb))
 - Bump github.com/Azure/terraform-module-test-helper from 0.12.0 to 0.13.0 in /test [\#25](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/25) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Fix broken example [\#22](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/22) ([lonegunmanb](https://github.com/lonegunmanb))
 - Bump github.com/Azure/terraform-module-test-helper from 0.10.0 to 0.12.0 in /test [\#19](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/19) ([dependabot[bot]](https://github.com/apps/dependabot))

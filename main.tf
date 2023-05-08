@@ -1,9 +1,8 @@
 resource "random_id" "vm_sa" {
+  byte_length = 6
   keepers = {
     vm_name = var.name
   }
-
-  byte_length = 6
 }
 
 resource "azurerm_storage_account" "boot_diagnostics" {
@@ -22,7 +21,14 @@ resource "azurerm_storage_account" "boot_diagnostics" {
   min_tls_version                  = var.new_boot_diagnostics_storage_account.min_tls_version
   public_network_access_enabled    = var.new_boot_diagnostics_storage_account.public_network_access_enabled
   shared_access_key_enabled        = var.new_boot_diagnostics_storage_account.shared_access_key_enabled
-  tags                             = var.tags
+  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_git_commit           = "c01af1788f09558cf2ea3faea035bd95751da759"
+    avm_git_file             = "main.tf"
+    avm_git_last_modified_at = "2022-12-29 13:09:50"
+    avm_git_org              = "Azure"
+    avm_git_repo             = "terraform-azurerm-virtual-machine"
+    avm_yor_trace            = "215680c8-4d1e-48e9-b963-f085642d4810"
+  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
 
   dynamic "blob_properties" {
     for_each = var.new_boot_diagnostics_storage_account.blob_properties == null ? [] : [
@@ -115,11 +121,18 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   proximity_placement_group_id    = var.proximity_placement_group_id
   secure_boot_enabled             = var.secure_boot_enabled
   source_image_id                 = var.source_image_id
-  tags                            = var.tags
-  user_data                       = var.user_data
-  virtual_machine_scale_set_id    = var.virtual_machine_scale_set_id
-  vtpm_enabled                    = var.vtpm_enabled
-  zone                            = var.zone
+  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_git_commit           = "3e89abe6574b2b38fe9bbf15949782bf337bdbdb"
+    avm_git_file             = "main.tf"
+    avm_git_last_modified_at = "2023-01-06 12:36:49"
+    avm_git_org              = "Azure"
+    avm_git_repo             = "terraform-azurerm-virtual-machine"
+    avm_yor_trace            = "d0701238-4893-41ae-900f-c2e65c8e63c0"
+  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
+  user_data                    = var.user_data
+  virtual_machine_scale_set_id = var.virtual_machine_scale_set_id
+  vtpm_enabled                 = var.vtpm_enabled
+  zone                         = var.zone
 
   os_disk {
     caching                          = var.os_disk.caching
@@ -302,12 +315,19 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   proximity_placement_group_id  = var.proximity_placement_group_id
   secure_boot_enabled           = var.secure_boot_enabled
   source_image_id               = var.source_image_id
-  tags                          = var.tags
-  timezone                      = var.timezone
-  user_data                     = var.user_data
-  virtual_machine_scale_set_id  = var.virtual_machine_scale_set_id
-  vtpm_enabled                  = var.vtpm_enabled
-  zone                          = var.zone
+  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_git_commit           = "3e89abe6574b2b38fe9bbf15949782bf337bdbdb"
+    avm_git_file             = "main.tf"
+    avm_git_last_modified_at = "2023-01-06 12:36:49"
+    avm_git_org              = "Azure"
+    avm_git_repo             = "terraform-azurerm-virtual-machine"
+    avm_yor_trace            = "ffaa4381-fb26-4049-aaa4-6b76a34fdf1b"
+  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
+  timezone                     = var.timezone
+  user_data                    = var.user_data
+  virtual_machine_scale_set_id = var.virtual_machine_scale_set_id
+  vtpm_enabled                 = var.vtpm_enabled
+  zone                         = var.zone
 
   os_disk {
     caching                          = var.os_disk.caching
@@ -515,7 +535,14 @@ resource "azurerm_network_interface" "vm" {
   #checkov:skip=CKV_AZURE_118
   enable_ip_forwarding    = var.new_network_interface.ip_forwarding_enabled
   internal_dns_name_label = var.new_network_interface.internal_dns_name_label
-  tags                    = var.tags
+  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_git_commit           = "c6c30c1119c3d25829b29efc3cc629b5d4767301"
+    avm_git_file             = "main.tf"
+    avm_git_last_modified_at = "2023-01-17 02:03:20"
+    avm_git_org              = "Azure"
+    avm_git_repo             = "terraform-azurerm-virtual-machine"
+    avm_yor_trace            = "cfa0bd9f-8637-4fb4-ac63-f449b56caf32"
+  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
 
   dynamic "ip_configuration" {
     for_each = local.network_interface_ip_configuration_indexes
@@ -576,11 +603,18 @@ resource "azurerm_managed_disk" "disk" {
   source_resource_id               = each.value.source_resource_id
   source_uri                       = each.value.source_uri
   storage_account_id               = each.value.storage_account_id
-  tags                             = var.tags
-  tier                             = each.value.tier
-  trusted_launch_enabled           = each.value.trusted_launch_enabled
-  upload_size_bytes                = each.value.upload_size_bytes
-  zone                             = var.zone
+  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_git_commit           = "c6c30c1119c3d25829b29efc3cc629b5d4767301"
+    avm_git_file             = "main.tf"
+    avm_git_last_modified_at = "2023-01-17 02:03:20"
+    avm_git_org              = "Azure"
+    avm_git_repo             = "terraform-azurerm-virtual-machine"
+    avm_yor_trace            = "447af86b-2cb9-4571-a234-e7e548dab9d0"
+  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
+  tier                   = each.value.tier
+  trusted_launch_enabled = each.value.trusted_launch_enabled
+  upload_size_bytes      = each.value.upload_size_bytes
+  zone                   = var.zone
 
   dynamic "encryption_settings" {
     for_each = each.value.encryption_settings == null ? [] : [
@@ -639,7 +673,14 @@ resource "azurerm_virtual_machine_extension" "extensions" {
   failure_suppression_enabled = each.value.failure_suppression_enabled
   protected_settings          = each.value.protected_settings
   settings                    = each.value.settings
-  tags                        = var.tags
+  tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
+    avm_git_commit           = "c6c30c1119c3d25829b29efc3cc629b5d4767301"
+    avm_git_file             = "main.tf"
+    avm_git_last_modified_at = "2023-01-17 02:03:20"
+    avm_git_org              = "Azure"
+    avm_git_repo             = "terraform-azurerm-virtual-machine"
+    avm_yor_trace            = "74bdb3b4-9c66-4fb5-88d0-7856c8df382d"
+  } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
 
   dynamic "protected_settings_from_key_vault" {
     for_each = each.value.protected_settings_from_key_vault == null ? [] : [
