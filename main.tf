@@ -267,10 +267,6 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
       error_message = "Must provide one and only one of `vm_source_image_id`, `vm_source_image_reference` and `vm_os_simple`."
     }
     precondition {
-      condition     = !var.boot_diagnostics ? true : var.new_boot_diagnostics_storage_account != null || var.boot_diagnostics_storage_account_uri != null
-      error_message = "Either `new_boot_diagnostics_storage_account` or `vm_boot_diagnostics_storage_account_uri` must be provided if `boot_diagnostics` is `true`."
-    }
-    precondition {
       condition     = var.network_interface_ids != null || var.new_network_interface != null
       error_message = "Either `new_network_interface` or `network_interface_ids` must be provided."
     }
@@ -471,10 +467,6 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
         ] : b if b
       ]) == 1
       error_message = "Must provide one and only one of `vm_source_image_id`, `vm_source_image_reference` and `vm_os_simple`."
-    }
-    precondition {
-      condition     = !var.boot_diagnostics ? true : var.new_boot_diagnostics_storage_account != null || var.boot_diagnostics_storage_account_uri != null
-      error_message = "Either `new_boot_diagnostics_storage_account` or `vm_boot_diagnostics_storage_account_uri` must be provided if `boot_diagnostics` is `true`."
     }
     precondition {
       condition     = var.network_interface_ids != null || var.new_network_interface != null
