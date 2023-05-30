@@ -53,7 +53,7 @@ output "vm_zone" {
   value       = local.virtual_machine.zone
 }
 
-output "data_disks" {
-  description = "The list of data disk(s) attached to this Virtual Machine."
+output "data_disk_ids" {
+  description = "The list of data disk IDs attached to this Virtual Machine."
   value       = try([for attachment in azurerm_virtual_machine_data_disk_attachment.attachment : attachment.id], [])
 }
