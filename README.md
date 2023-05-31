@@ -256,6 +256,7 @@ No modules.
 
 | Name                                                                                                                                        | Description                                                                                                      |
 |---------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| <a name="output_data_disk_ids"></a> [data\_disk\_ids](#output\_data\_disk\_ids)                                                             | The list of data disk IDs attached to this Virtual Machine.                                                      |
 | <a name="output_network_interface_id"></a> [network\_interface\_id](#output\_network\_interface\_id)                                        | Id of the vm nic that created by this module. `null` if `var.network_interface_ids` is provided.                 |
 | <a name="output_network_interface_private_ip"></a> [network\_interface\_private\_ip](#output\_network\_interface\_private\_ip)              | Private ip address of the vm nic that created by this module. `null` if `var.network_interface_ids` is provided. |
 | <a name="output_vm_admin_username"></a> [vm\_admin\_username](#output\_vm\_admin\_username)                                                 | The username of the administrator configured in the Virtual Machine.                                             |
