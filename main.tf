@@ -684,4 +684,6 @@ resource "azurerm_virtual_machine_extension" "extensions" {
       source_vault_id = each.value.protected_settings_from_key_vault.source_vault_id
     }
   }
+
+  depends_on = [azurerm_virtual_machine_data_disk_attachment.attachment]
 }

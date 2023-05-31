@@ -52,3 +52,8 @@ output "vm_zone" {
   description = "The Availability Zones in which this Virtual Machine is located."
   value       = local.virtual_machine.zone
 }
+
+output "data_disk_ids" {
+  description = "The list of data disk IDs attached to this Virtual Machine."
+  value       = [for attachment in azurerm_virtual_machine_data_disk_attachment.attachment : attachment.id]
+}
