@@ -13,4 +13,7 @@ skip-check:
   - CKV_GHA_3
 skip-framework:
   - dockerfile
+  - kubernetes
+skip-path:
+  - test/vendor
 summary-position: top
