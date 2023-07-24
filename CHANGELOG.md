@@ -5,6 +5,7 @@
 **Merged pull requests:**
 
 - Fix checkov issue [\#46](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/46) ([lonegunmanb](https://github.com/lonegunmanb))
+- Bump github.com/Azure/terraform-module-test-helper from 0.13.0 to 0.15.0 in /test [\#45](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/45) ([dependabot[bot]](https://github.com/apps/dependabot))
 
 ## [1.0.0](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/1.0.0) (2023-06-02)
 
