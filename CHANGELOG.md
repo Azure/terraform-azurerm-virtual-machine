@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/HEAD)
+
+**Merged pull requests:**
+
+- Fix checkov issue [\#46](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/46) ([lonegunmanb](https://github.com/lonegunmanb))
+
 ## [1.0.0](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/1.0.0) (2023-06-02)
 
 **Merged pull requests:**
