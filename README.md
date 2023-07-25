@@ -67,7 +67,7 @@ module "linux" {
 }
 ```
 
-Please refer to the sub folders under `examples` folder. You can execute `terraform apply` command in `examples`'s sub folder to try the module. These examples are tested against every PR with the [E2E Test](#Pre-Commit--Pr-Check--Test).
+Please refer to the sub folders under `examples` folder. You can execute `terraform apply` command in `examples`'s sub folder to try the module. These examples are tested against every PR with the [E2E Test](#pre-commit--pr-check--test).
 
 ## Enable or disable tracing tags
 
