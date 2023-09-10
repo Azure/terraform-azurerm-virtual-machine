@@ -1,3 +1,42 @@
+## 10 Sep 23 00:39 UTC
+
+Success: false
+
+### Versions
+
+
+
+### Error
+
+
+Initializing the backend...
+Initializing modules...
+- linux in ../..
+Downloading registry.terraform.io/Azure/vnet/azurerm 4.0.0 for vnet...
+- vnet in .terraform/modules/vnet
+
+Initializing provider plugins...
+- Finding hashicorp/azurerm versions matching ">= 3.11.0, < 4.0.0"...
+- Finding hashicorp/local versions matching "2.2.3"...
+- Finding hashicorp/random versions matching ">= 3.0.0"...
+- Finding hashicorp/tls versions matching "3.0.0"...
+- Installing hashicorp/azurerm v3.72.0...
+- Installing hashicorp/local v2.2.3...
+- Installed hashicorp/local v2.2.3 (signed by HashiCorp)
+- Installing hashicorp/random v3.5.1...
+- Installed hashicorp/random v3.5.1 (signed by HashiCorp)
+- Installing hashicorp/tls v3.0.0...
+- Installed hashicorp/tls v3.0.0 (signed by HashiCorp)
+
+Error: Failed to install provider
+
+Error while installing hashicorp/azurerm v3.72.0: releases.hashicorp.com: Get
+"https://releases.hashicorp.com/terraform-provider-azurerm/3.72.0/terraform-provider-azurerm_3.72.0_linux_amd64.zip":
+read tcp 10.1.30.0:56366->108.138.85.65:443: read: connection reset by peer
+
+
+---
+
 ## 03 Sep 23 00:38 UTC
 
 Success: true
