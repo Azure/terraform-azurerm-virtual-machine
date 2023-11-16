@@ -122,6 +122,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   priority                                               = var.priority
   provision_vm_agent                                     = var.provision_vm_agent
   proximity_placement_group_id                           = var.proximity_placement_group_id
+  reboot_setting                                         = local.reboot_setting
   secure_boot_enabled                                    = var.secure_boot_enabled
   source_image_id                                        = var.source_image_id
   tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
@@ -315,8 +316,10 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   priority                                               = var.priority
   provision_vm_agent                                     = var.provision_vm_agent
   proximity_placement_group_id                           = var.proximity_placement_group_id
-  secure_boot_enabled                                    = var.secure_boot_enabled
-  source_image_id                                        = var.source_image_id
+  reboot_setting                                         = local.reboot_setting
+
+  secure_boot_enabled = var.secure_boot_enabled
+  source_image_id     = var.source_image_id
   tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_git_commit           = "3e89abe6574b2b38fe9bbf15949782bf337bdbdb"
     avm_git_file             = "main.tf"
