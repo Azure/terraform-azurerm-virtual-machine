@@ -23,15 +23,16 @@ variable "name" {
 
 variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
   type        = bool
-  description = "(Optional) Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM."
+  description = "(Optional) Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM. Only valid if patch_mode is AutomaticByPlatform."
   default     = false
   nullable    = false
 }
 
 variable "reboot_setting" {
   type        = string
-  description = "(Optional) Specifies the reboot setting for platform scheduled patching. Possible values are Always, IfRequired and Never."
+  description = "(Optional) Specifies the reboot setting for platform scheduled patching. Possible values are Always, IfRequired and Never. Only valid if patch_mode is AutomaticByPlatform."
   default     = null
+  nullable = true
   validation {
     condition     = reboot_setting == null || contains(["Always", "IfRequired", "Never"], var.reboot_setting)
     error_message = "${var.reboot_setting} is not a valid value. Use one of: Always, IfRequired, Never"
