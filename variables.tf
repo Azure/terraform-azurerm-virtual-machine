@@ -21,6 +21,13 @@ variable "name" {
   nullable    = false
 }
 
+variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
+  type        = bool
+  description = "(Optional) Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM."
+  default     = false
+  nullable    = false
+}
+
 variable "os_disk" {
   type = object({
     caching                          = string
