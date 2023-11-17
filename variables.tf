@@ -33,7 +33,7 @@ variable "reboot_setting" {
   default     = null
   nullable    = true
   validation {
-    condition     = reboot_setting == null || contains(["Always", "IfRequired", "Never"], var.reboot_setting)
+    condition     = reboot_setting == null ? true : contains(["Always", "IfRequired", "Never"], var.reboot_setting)
     error_message = "${var.reboot_setting} is not a valid value. Use one of: Always, IfRequired, Never"
   }
 }
