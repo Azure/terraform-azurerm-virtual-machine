@@ -283,12 +283,12 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     }
     precondition {
       condition     = var.bypass_platform_safety_checks_on_user_schedule_enabled == false ? true : local.patch_mode == "AutomaticByPlatform"
-      error_message = "bypass_platform_safety_checks_on_user_schedule_enabled can only be set when patch_mode is `AutomaticByPlatform`"
+      error_message = "`bypass_platform_safety_checks_on_user_schedule_enabled` can only be set when patch_mode is `AutomaticByPlatform`"
     }
 
     precondition {
       condition     = var.reboot_setting == null ? true : local.patch_mode == "AutomaticByPlatform"
-      error_message = "reboot_setting can only be set when patch_mode is AutomaticByPlatform"
+      error_message = "`reboot_setting` can only be set when patch_mode is `AutomaticByPlatform`"
     }
   }
 }
@@ -494,12 +494,12 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
     }
     precondition {
       condition     = var.bypass_platform_safety_checks_on_user_schedule_enabled == false ? true : local.patch_mode == "AutomaticByPlatform"
-      error_message = "bypass_platform_safety_checks_on_user_schedule_enabled can only be set when patch_mode is `AutomaticByPlatform`"
+      error_message = "`bypass_platform_safety_checks_on_user_schedule_enabled` can only be set when patch_mode is `AutomaticByPlatform`"
     }
 
     precondition {
       condition     = var.reboot_setting == null ? true : local.patch_mode == "AutomaticByPlatform"
-      error_message = "reboot_setting can only be set when patch_mode is AutomaticByPlatform"
+      error_message = "`reboot_setting` can only be set when patch_mode is `AutomaticByPlatform`"
     }
   }
 }
