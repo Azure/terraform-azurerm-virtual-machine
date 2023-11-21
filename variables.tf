@@ -31,7 +31,6 @@ variable "reboot_setting" {
   type        = string
   description = "(Optional) Specifies the reboot setting for platform scheduled patching. Possible values are `Always`, `IfRequired` and `Never`. Only valid if `patch_mode` is `AutomaticByPlatform`."
   default     = null
-  nullable    = true
   validation {
     condition     = reboot_setting == null ? true : contains(["Always", "IfRequired", "Never"], var.reboot_setting)
     error_message = "${var.reboot_setting} is not a valid value. Use one of: `Always`, `IfRequired`, `Never`"
