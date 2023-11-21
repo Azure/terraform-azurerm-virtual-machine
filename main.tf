@@ -287,7 +287,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
     }
 
     precondition {
-      condition     = var.reboot_setting == null ? true : local.patch_mode == "AutomaticByPlatform"
+      condition     = var.reboot_setting == null || local.patch_mode == "AutomaticByPlatform"
       error_message = "`reboot_setting` can only be set when patch_mode is `AutomaticByPlatform`"
     }
   }
@@ -498,7 +498,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
     }
 
     precondition {
-      condition     = var.reboot_setting == null ? true : local.patch_mode == "AutomaticByPlatform"
+      condition     = var.reboot_setting == null || local.patch_mode == "AutomaticByPlatform"
       error_message = "`reboot_setting` can only be set when patch_mode is `AutomaticByPlatform`"
     }
   }
