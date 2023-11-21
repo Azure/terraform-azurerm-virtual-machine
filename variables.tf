@@ -24,6 +24,7 @@ variable "name" {
 variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
   type        = bool
   description = "(Optional) Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM. Only valid if patch_mode is `AutomaticByPlatform`."
+  nullable    = false
   default     = false
 }
 
