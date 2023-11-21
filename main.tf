@@ -282,7 +282,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
       error_message = "`username` in var.admin_ssh_keys should be the same as `admin_username` or `null`."
     }
     precondition {
-      condition     = var.bypass_platform_safety_checks_on_user_schedule_enabled == false ? true : local.patch_mode == "AutomaticByPlatform"
+      condition     = !var.bypass_platform_safety_checks_on_user_schedule_enabled || local.patch_mode == "AutomaticByPlatform"
       error_message = "`bypass_platform_safety_checks_on_user_schedule_enabled` can only be set when patch_mode is `AutomaticByPlatform`"
     }
 
@@ -493,7 +493,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
       error_message = "Either `new_network_interface` or `network_interface_ids` must be provided."
     }
     precondition {
-      condition     = var.bypass_platform_safety_checks_on_user_schedule_enabled == false ? true : local.patch_mode == "AutomaticByPlatform"
+      condition     = !var.bypass_platform_safety_checks_on_user_schedule_enabled || local.patch_mode == "AutomaticByPlatform"
       error_message = "`bypass_platform_safety_checks_on_user_schedule_enabled` can only be set when patch_mode is `AutomaticByPlatform`"
     }
 
