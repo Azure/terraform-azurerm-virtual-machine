@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/HEAD)
+## [1.1.0](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/1.1.0) (2023-11-23)
 
 **Merged pull requests:**
 
