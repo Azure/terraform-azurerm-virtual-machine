@@ -4,6 +4,7 @@
 
 **Merged pull requests:**
 
+- Support `bypass_platform_safety_checks_on_user_schedule_enabled` and `reboot_setting` [\#66](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/66) ([davidkarlsen](https://github.com/davidkarlsen))
 - Fix anchor link for e2e test on README.md [\#47](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/47) ([exe-r](https://github.com/exe-r))
 - Fix checkov issue [\#46](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/46) ([lonegunmanb](https://github.com/lonegunmanb))
 - Bump github.com/Azure/terraform-module-test-helper from 0.13.0 to 0.15.0 in /test [\#45](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/45) ([dependabot[bot]](https://github.com/apps/dependabot))

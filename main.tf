@@ -27,7 +27,7 @@ resource "azurerm_storage_account" "boot_diagnostics" {
     avm_git_last_modified_at = "2022-12-29 13:09:50"
     avm_git_org              = "Azure"
     avm_git_repo             = "terraform-azurerm-virtual-machine"
-    avm_yor_trace            = "64719d81-1e21-4e7a-b5ee-263b94c0c59c"
+    avm_yor_trace            = "45bf653b-c30f-4212-843c-6c06fe672556"
     } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_yor_name = "boot_diagnostics"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
@@ -126,12 +126,12 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   secure_boot_enabled                                    = var.secure_boot_enabled
   source_image_id                                        = var.source_image_id
   tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
-    avm_git_commit           = "3e89abe6574b2b38fe9bbf15949782bf337bdbdb"
+    avm_git_commit           = "b64ecfc706205b7c0a1e9c91feae63a35f32b3da"
     avm_git_file             = "main.tf"
-    avm_git_last_modified_at = "2023-01-06 12:36:49"
+    avm_git_last_modified_at = "2023-11-23 13:50:04"
     avm_git_org              = "Azure"
     avm_git_repo             = "terraform-azurerm-virtual-machine"
-    avm_yor_trace            = "b4660416-965f-44e5-9145-ac90ea3ef975"
+    avm_yor_trace            = "571405fd-15bc-473e-8bae-d0efcd6b1826"
     } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_yor_name = "vm_linux"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
@@ -285,7 +285,6 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
       condition     = !var.bypass_platform_safety_checks_on_user_schedule_enabled || local.patch_mode == "AutomaticByPlatform"
       error_message = "`bypass_platform_safety_checks_on_user_schedule_enabled` can only be set when patch_mode is `AutomaticByPlatform`"
     }
-
     precondition {
       condition     = var.reboot_setting == null || local.patch_mode == "AutomaticByPlatform"
       error_message = "`reboot_setting` can only be set when patch_mode is `AutomaticByPlatform`"
@@ -326,16 +325,15 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   provision_vm_agent                                     = var.provision_vm_agent
   proximity_placement_group_id                           = var.proximity_placement_group_id
   reboot_setting                                         = var.reboot_setting
-
-  secure_boot_enabled = var.secure_boot_enabled
-  source_image_id     = var.source_image_id
+  secure_boot_enabled                                    = var.secure_boot_enabled
+  source_image_id                                        = var.source_image_id
   tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
-    avm_git_commit           = "3e89abe6574b2b38fe9bbf15949782bf337bdbdb"
+    avm_git_commit           = "b64ecfc706205b7c0a1e9c91feae63a35f32b3da"
     avm_git_file             = "main.tf"
-    avm_git_last_modified_at = "2023-01-06 12:36:49"
+    avm_git_last_modified_at = "2023-11-23 13:50:04"
     avm_git_org              = "Azure"
     avm_git_repo             = "terraform-azurerm-virtual-machine"
-    avm_yor_trace            = "e8b7cd36-7a5c-4ec0-9131-70f6c08832d5"
+    avm_yor_trace            = "bb220549-3edd-466a-b9fe-a49e55b9bcb4"
     } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_yor_name = "vm_windows"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
@@ -496,7 +494,6 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
       condition     = !var.bypass_platform_safety_checks_on_user_schedule_enabled || local.patch_mode == "AutomaticByPlatform"
       error_message = "`bypass_platform_safety_checks_on_user_schedule_enabled` can only be set when patch_mode is `AutomaticByPlatform`"
     }
-
     precondition {
       condition     = var.reboot_setting == null || local.patch_mode == "AutomaticByPlatform"
       error_message = "`reboot_setting` can only be set when patch_mode is `AutomaticByPlatform`"
@@ -562,7 +559,7 @@ resource "azurerm_network_interface" "vm" {
     avm_git_last_modified_at = "2023-01-17 02:03:20"
     avm_git_org              = "Azure"
     avm_git_repo             = "terraform-azurerm-virtual-machine"
-    avm_yor_trace            = "39e3ffa2-b03d-469e-89e3-ad6ba38be41f"
+    avm_yor_trace            = "c598f971-6520-45f5-99bb-5cd9051530da"
     } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_yor_name = "vm"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
@@ -632,7 +629,7 @@ resource "azurerm_managed_disk" "disk" {
     avm_git_last_modified_at = "2023-01-17 02:03:20"
     avm_git_org              = "Azure"
     avm_git_repo             = "terraform-azurerm-virtual-machine"
-    avm_yor_trace            = "71fa5dc0-f450-4410-9b11-6bc16adfae4a"
+    avm_yor_trace            = "e81ccdd0-4cee-47a9-ac92-13fc4a5ec0ed"
     } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_yor_name = "disk"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))
@@ -704,7 +701,7 @@ resource "azurerm_virtual_machine_extension" "extensions" {
     avm_git_last_modified_at = "2023-05-31 08:40:27"
     avm_git_org              = "Azure"
     avm_git_repo             = "terraform-azurerm-virtual-machine"
-    avm_yor_trace            = "6f0a3c98-6193-46a2-9ebf-176c3e38e919"
+    avm_yor_trace            = "e4f0c166-b01b-4e04-80fc-da93440fb8c8"
     } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/), (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_yor_name = "extensions"
   } /*<box>*/ : replace(k, "avm_", var.tracing_tags_prefix) => v } : {}) /*</box>*/))

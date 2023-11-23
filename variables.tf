@@ -21,23 +21,6 @@ variable "name" {
   nullable    = false
 }
 
-variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
-  type        = bool
-  description = "(Optional) Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM. Only valid if patch_mode is `AutomaticByPlatform`."
-  nullable    = false
-  default     = false
-}
-
-variable "reboot_setting" {
-  type        = string
-  description = "(Optional) Specifies the reboot setting for platform scheduled patching. Possible values are `Always`, `IfRequired` and `Never`. Only valid if `patch_mode` is `AutomaticByPlatform`."
-  default     = null
-  validation {
-    condition     = var.reboot_setting == null ? true : contains(["Always", "IfRequired", "Never"], var.reboot_setting)
-    error_message = "`var.reboot_setting` is not a valid value. Use one of: `Always`, `IfRequired`, `Never`"
-  }
-}
-
 variable "os_disk" {
   type = object({
     caching                          = string
@@ -161,6 +144,13 @@ variable "boot_diagnostics_storage_account_uri" {
   type        = string
   default     = null
   description = "(Optional) The Primary/Secondary Endpoint for the Azure Storage Account which should be used to store Boot Diagnostics, including Console Output and Screenshots from the Hypervisor."
+}
+
+variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
+  type        = bool
+  default     = false
+  description = "(Optional) Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM. Only valid if patch_mode is `AutomaticByPlatform`."
+  nullable    = false
 }
 
 variable "capacity_reservation_group_id" {
@@ -619,6 +609,17 @@ variable "proximity_placement_group_id" {
   type        = string
   default     = null
   description = "(Optional) The ID of the Proximity Placement Group which the Virtual Machine should be assigned to. Conflicts with `capacity_reservation_group_id`."
+}
+
+variable "reboot_setting" {
+  type        = string
+  default     = null
+  description = "(Optional) Specifies the reboot setting for platform scheduled patching. Possible values are `Always`, `IfRequired` and `Never`. Only valid if `patch_mode` is `AutomaticByPlatform`."
+
+  validation {
+    condition     = var.reboot_setting == null ? true : contains(["Always", "IfRequired", "Never"], var.reboot_setting)
+    error_message = "`var.reboot_setting` is not a valid value. Use one of: `Always`, `IfRequired`, `Never`"
+  }
 }
 
 variable "secrets" {
