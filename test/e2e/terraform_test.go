@@ -62,6 +62,7 @@ func TestExamplesVmss(t *testing.T) {
 }
 
 func TestExamplesDedicatedHostGroup(t *testing.T) {
+	t.Skip("skip since we don't have quota now")
 	test_helper.RunE2ETest(t, "../../", "examples/dedicated_host", terraform.Options{
 		Upgrade: true,
 	}, func(t *testing.T, output test_helper.TerraformOutput) {
