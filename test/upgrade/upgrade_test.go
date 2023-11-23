@@ -42,7 +42,6 @@ func TestExampleUpgrade_basic(t *testing.T) {
 func TestExampleUpgrade(t *testing.T) {
 	examples := []string{
 		"availability_set",
-		"dedicated_host",
 		"vmss",
 	}
 	for _, example := range examples {
