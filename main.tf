@@ -110,6 +110,7 @@ resource "azurerm_linux_virtual_machine" "vm_linux" {
   dedicated_host_group_id                                = var.dedicated_host_group_id
   dedicated_host_id                                      = var.dedicated_host_id
   disable_password_authentication                        = var.disable_password_authentication
+  disk_controller_type                                   = var.disk_controller_type
   edge_zone                                              = var.edge_zone
   encryption_at_host_enabled                             = var.encryption_at_host_enabled
   eviction_policy                                        = var.eviction_policy
@@ -310,6 +311,7 @@ resource "azurerm_windows_virtual_machine" "vm_windows" {
   custom_data                                            = var.custom_data
   dedicated_host_group_id                                = var.dedicated_host_group_id
   dedicated_host_id                                      = var.dedicated_host_id
+  disk_controller_type                                   = var.disk_controller_type
   edge_zone                                              = var.edge_zone
   enable_automatic_updates                               = var.automatic_updates_enabled
   encryption_at_host_enabled                             = var.encryption_at_host_enabled
