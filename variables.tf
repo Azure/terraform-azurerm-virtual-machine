@@ -296,6 +296,17 @@ variable "disable_password_authentication" {
   description = "(Optional) Should Password Authentication be disabled on this Virtual Machine? Defaults to `true`. Changing this forces a new resource to be created."
 }
 
+variable "disk_controller_type" {
+  type        = string
+  default     = "SCSI"
+  description = "(Optional) Specifies the Disk Controller Type used for this Virtual Machine. Possible values are `SCSI` and `NVMe`."
+
+  validation {
+    condition     = contains(["SCSI", "NVMe"], var.disk_controller_type)
+    error_message = "`var.disk_controller_type` is not a valid value. Use one of: `SCSI`, `NVMe`"
+  }
+}
+
 variable "edge_zone" {
   type        = string
   default     = null
