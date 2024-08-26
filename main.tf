@@ -551,7 +551,7 @@ resource "azurerm_network_interface" "vm" {
   edge_zone                     = var.new_network_interface.edge_zone
   accelerated_networking_enabled = var.new_network_interface.accelerated_networking_enabled
   #checkov:skip=CKV_AZURE_118
-  enable_ip_forwarding    = var.new_network_interface.ip_forwarding_enabled
+  ip_forwarding_enabled    = var.new_network_interface.ip_forwarding_enabled
   internal_dns_name_label = var.new_network_interface.internal_dns_name_label
   tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_git_commit           = "c6c30c1119c3d25829b29efc3cc629b5d4767301"
