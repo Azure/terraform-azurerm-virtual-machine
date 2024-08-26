@@ -549,7 +549,7 @@ resource "azurerm_network_interface" "vm" {
   resource_group_name           = var.resource_group_name
   dns_servers                   = var.new_network_interface.dns_servers
   edge_zone                     = var.new_network_interface.edge_zone
-  enable_accelerated_networking = var.new_network_interface.accelerated_networking_enabled
+  accelerated_networking_enabled = var.new_network_interface.accelerated_networking_enabled
   #checkov:skip=CKV_AZURE_118
   enable_ip_forwarding    = var.new_network_interface.ip_forwarding_enabled
   internal_dns_name_label = var.new_network_interface.internal_dns_name_label
