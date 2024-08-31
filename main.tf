@@ -544,14 +544,14 @@ locals {
 resource "azurerm_network_interface" "vm" {
   count = var.new_network_interface != null ? 1 : 0
 
-  location                      = var.location
-  name                          = coalesce(var.new_network_interface.name, "${var.name}-nic")
-  resource_group_name           = var.resource_group_name
-  dns_servers                   = var.new_network_interface.dns_servers
-  edge_zone                     = var.new_network_interface.edge_zone
+  location                       = var.location
+  name                           = coalesce(var.new_network_interface.name, "${var.name}-nic")
+  resource_group_name            = var.resource_group_name
+  dns_servers                    = var.new_network_interface.dns_servers
+  edge_zone                      = var.new_network_interface.edge_zone
   accelerated_networking_enabled = var.new_network_interface.accelerated_networking_enabled
   #checkov:skip=CKV_AZURE_118
-  ip_forwarding_enabled    = var.new_network_interface.ip_forwarding_enabled
+  ip_forwarding_enabled   = var.new_network_interface.ip_forwarding_enabled
   internal_dns_name_label = var.new_network_interface.internal_dns_name_label
   tags = merge(var.tags, (/*<box>*/ (var.tracing_tags_enabled ? { for k, v in /*</box>*/ {
     avm_git_commit           = "c6c30c1119c3d25829b29efc3cc629b5d4767301"
