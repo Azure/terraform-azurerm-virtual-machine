@@ -75,8 +75,8 @@ resource "azurerm_storage_account" "boot_diagnostics" {
     ]
 
     content {
-      key_vault_key_id          = var.new_boot_diagnostics_storage_account.customer_managed_key.key_vault_key_id
       user_assigned_identity_id = var.new_boot_diagnostics_storage_account.customer_managed_key.user_assigned_identity_id
+      key_vault_key_id          = var.new_boot_diagnostics_storage_account.customer_managed_key.key_vault_key_id
     }
   }
   dynamic "identity" {

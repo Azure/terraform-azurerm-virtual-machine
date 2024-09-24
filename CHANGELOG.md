@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/HEAD)
+
+**Merged pull requests:**
+
+- Use oidc as e2e test authentication method [\#76](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/76) ([lonegunmanb](https://github.com/lonegunmanb))
+
 ## [1.1.0](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/1.1.0) (2023-11-23)
 
 **Merged pull requests:**
@@ -14,7 +20,7 @@
 **Merged pull requests:**
 
 - Prepare for 1.0.0 [\#36](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/36) ([lonegunmanb](https://github.com/lonegunmanb))
-- add VM Extension dependency on data disks attachment and output list of attached disk\(s\) \#33 [\#35](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/35) ([tl-aiyor](https://github.com/tl-aiyor))
+- add VM Extension dependency on data disks attachment and output list of attached disk\(s\) \#33 [\#35](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/35) ([tze-dev](https://github.com/tze-dev))
 - Remove precondition on boot\_diagnostics [\#32](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/32) ([lonegunmanb](https://github.com/lonegunmanb))
 - add tracing tag toggle variables and update readme [\#28](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/28) ([lonegunmanb](https://github.com/lonegunmanb))
 - Bump github.com/Azure/terraform-module-test-helper from 0.12.0 to 0.13.0 in /test [\#25](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/25) ([dependabot[bot]](https://github.com/apps/dependabot))
