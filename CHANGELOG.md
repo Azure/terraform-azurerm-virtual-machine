@@ -4,6 +4,7 @@
 
 **Merged pull requests:**
 
+- Add support for `disk_controller_type` [\#82](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/82) ([lonegunmanb](https://github.com/lonegunmanb))
 - Bump github.com/Azure/terraform-module-test-helper in /test [\#81](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/81) ([lonegunmanb](https://github.com/lonegunmanb))
 - Bump github.com/Azure/terraform-module-test-helper from 0.15.0 to 0.26.0 in /test [\#78](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/78) ([lonegunmanb](https://github.com/lonegunmanb))
 - Use oidc as e2e test authentication method [\#76](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/76) ([lonegunmanb](https://github.com/lonegunmanb))
