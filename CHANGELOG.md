@@ -6,6 +6,7 @@
 
 - Bump github.com/Azure/terraform-module-test-helper from 0.15.0 to 0.26.0 in /test [\#78](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/78) ([lonegunmanb](https://github.com/lonegunmanb))
 - Use oidc as e2e test authentication method [\#76](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/76) ([lonegunmanb](https://github.com/lonegunmanb))
+- Update deprecated variable names 'enable\_accelerated\_networking' and 'enabled\_ip\_forwarding' [\#75](https://github.com/Azure/terraform-azurerm-virtual-machine/pull/75) ([rorsgo](https://github.com/rorsgo))
 
 ## [1.1.0](https://github.com/Azure/terraform-azurerm-virtual-machine/tree/1.1.0) (2023-11-23)
 
