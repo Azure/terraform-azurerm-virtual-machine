@@ -18,7 +18,7 @@ locals {
 
 module "vnet" {
   source  = "Azure/vnet/azurerm"
-  version = "4.0.0"
+  version = "5.0.0"
 
   resource_group_name = local.resource_group.name
   use_for_each        = true
