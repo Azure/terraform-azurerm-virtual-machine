@@ -1,4 +1,6 @@
-# terraform-azurerm-virtual-machine
+# [DEPRECATED] terraform-azurerm-virtual-machine
+
+> **NOTE:** This terraform-azurerm-virtual-machine module is now deprecated. The module will no longer receive updates or support. Users are encouraged to transition to the [avm-res-compute-virtualmachine](https://github.com/Azure/terraform-azurerm-avm-res-compute-virtualmachine) module for future deployments.
 
 ## Deploys 1 Virtual Machines to your provided VNet
 
