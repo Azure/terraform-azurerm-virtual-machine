@@ -24,6 +24,7 @@ module "vnet" {
   use_for_each        = true
   vnet_location       = local.resource_group.location
   address_space       = ["192.168.0.0/24"]
+  enable_telemetry    = false
   vnet_name           = "vnet-vm-${random_id.id.hex}"
   subnet_names        = ["subnet-virtual-machine"]
   subnet_prefixes     = ["192.168.0.0/28"]
@@ -63,6 +64,7 @@ module "linux" {
       disk_encryption_set_id = azurerm_disk_encryption_set.example.id
     }
   ]
+  enable_telemetry = false
   new_boot_diagnostics_storage_account = {
     customer_managed_key = {
       key_vault_key_id          = azurerm_key_vault_key.storage_account_key.id

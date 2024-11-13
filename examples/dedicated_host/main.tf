@@ -23,6 +23,7 @@ module "vnet" {
   resource_group_name = local.resource_group.name
   use_for_each        = true
   vnet_location       = local.resource_group.location
+  enable_telemetry    = false
   address_space       = ["192.168.0.0/24"]
   vnet_name           = "vnet-vm-${random_id.id.hex}"
   subnet_names        = ["subnet-virtual-machine"]
@@ -99,6 +100,7 @@ module "dedicate_host" {
   allow_extension_operations = false
   boot_diagnostics           = false
   dedicated_host_id          = azurerm_dedicated_host.example.id
+  enable_telemetry           = false
   new_network_interface = {
     ip_forwarding_enabled = false
     ip_configurations = [

@@ -24,6 +24,7 @@ module "vnet" {
   use_for_each        = true
   vnet_location       = local.resource_group.location
   address_space       = ["192.168.0.0/24"]
+  enable_telemetry    = false
   vnet_name           = "vnet-vm-${random_id.id.hex}"
   subnet_names        = ["subnet-virtual-machine"]
   subnet_prefixes     = ["192.168.0.0/28"]
@@ -49,6 +50,7 @@ module "linux" {
   allow_extension_operations = false
   availability_set_id        = azurerm_availability_set.example.id
   boot_diagnostics           = false
+  enable_telemetry           = false
   new_network_interface = {
     ip_forwarding_enabled = false
     ip_configurations = [
