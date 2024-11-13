@@ -37,7 +37,7 @@ resource "tls_private_key" "ssh" {
 resource "azurerm_public_ip" "pip" {
   count = var.create_public_ip ? 2 : 0
 
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
   location            = local.resource_group.location
   name                = "pip-${random_id.id.hex}-${count.index}"
   resource_group_name = local.resource_group.name
