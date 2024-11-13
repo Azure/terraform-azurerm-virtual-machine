@@ -17,7 +17,7 @@ resource "azurerm_storage_account" "boot_diagnostics" {
   allow_nested_items_to_be_public  = var.new_boot_diagnostics_storage_account.allow_nested_items_to_be_public
   cross_tenant_replication_enabled = var.new_boot_diagnostics_storage_account.cross_tenant_replication_enabled
   default_to_oauth_authentication  = var.new_boot_diagnostics_storage_account.default_to_oauth_authentication
-  enable_https_traffic_only        = var.new_boot_diagnostics_storage_account.enable_https_traffic_only
+  https_traffic_only_enabled       = var.new_boot_diagnostics_storage_account.enable_https_traffic_only
   min_tls_version                  = var.new_boot_diagnostics_storage_account.min_tls_version
   public_network_access_enabled    = var.new_boot_diagnostics_storage_account.public_network_access_enabled
   shared_access_key_enabled        = var.new_boot_diagnostics_storage_account.shared_access_key_enabled
@@ -582,6 +582,8 @@ resource "azurerm_network_interface" "vm" {
   }
 
   lifecycle {
+    ignore_changes = [dns_servers]
+
     precondition {
       condition     = var.network_interface_ids == null
       error_message = "`new_network_interface` cannot be used along with `network_interface_ids`."
